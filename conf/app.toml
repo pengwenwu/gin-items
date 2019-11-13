@@ -1,0 +1,19 @@
+run_mode = "debug"
+
+[app]
+    page_size = 10
+    jwt_secret = "23347$040412"
+
+[server]
+    http_port = 8000
+    read_timeout = 60
+    write_timeout = 60
+
+[database]
+    type = "mysql"
+    user = "root"
+    password = "123456"
+    #127.0.0.1:3306
+    host = "127.0.0.1:3306"
+    name = "flashsale"
+    table_prefix = ""
