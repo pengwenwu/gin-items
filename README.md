@@ -1,6 +1,6 @@
 **项目目录**
 ```
-gin-blog/
+gin-items/
 ├── conf
 ├── library
 ├── middleware
