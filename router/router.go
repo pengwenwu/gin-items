@@ -4,7 +4,7 @@ import (
 	//"gin-items/middleware/jwt"
 	"github.com/gin-gonic/gin"
 
-	"gin-items/library/setting"
+	"gin-items/lib/setting"
 	"gin-items/router/api"
 )
 

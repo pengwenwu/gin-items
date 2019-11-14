@@ -11,9 +11,12 @@ run_mode = "debug"
 
 [database]
     type = "mysql"
-    user = "root"
-    password = "123456"
+#    user = "root"
+#    password = "123456"
+    user = "cishop"
+    password = "fuyuan1906"
     #127.0.0.1:3306
-    host = "127.0.0.1:3306"
-    name = "flashsale"
+#    host = "127.0.0.1:3306"
+    host = "192.168.0.235:3355"
+    name = "service_items"
     table_prefix = ""

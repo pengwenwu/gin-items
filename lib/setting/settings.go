@@ -17,7 +17,7 @@ type AppConfig struct {
 }
 
 type appInfo struct {
-	PageSize  int    `toml:"page_size"`
+	PageSize  int `toml:"page_size"`
 	JwtSecret string `toml:"jwt_secret"`
 }
 
@@ -85,6 +85,6 @@ func LoadServer() {
 }
 
 func LoadApp() {
-	JwtSecret = Config().APP.JwtSecret
 	PageSize = Config().APP.PageSize
+	JwtSecret = Config().APP.JwtSecret
 }

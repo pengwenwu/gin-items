@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"gin-items/library/setting"
+	"gin-items/lib/setting"
 	"gin-items/router"
 )
 

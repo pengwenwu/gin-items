@@ -18,4 +18,20 @@ type Items struct {
 	Props Props
 }
 
+func GetItemList(offset, limit int, maps interface{}) ([]*Items, error)  {
+	var items []*Items
+	err := db.Offset(offset).Limit(limit).Find(&items).Error
+	if err != nil {
+		return nil, err
+	}
+	return items, nil
+}
 
+func GetItemTotal(maps interface{}) (int, error) {
+	var count int
+	err := db.Model(&Items{}).Where(maps).Count(&count).Error
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
