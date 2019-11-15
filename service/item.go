@@ -10,8 +10,8 @@ type Items struct {
 	PageSize int
 }
 
-func (i *Items) GetItemList() ([]*model.Items, error) {
-	var items []*model.Items
+func (i *Items) GetItemList() (interface{}, error) {
+	//var items []*model.Items
 
 	items, err := model.GetItemList(i.OffSet, i.PageSize, i.getMaps())
 	if err != nil {

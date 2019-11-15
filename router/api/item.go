@@ -1,21 +1,19 @@
 package api
 
 import (
-	"gin-items/lib/app"
-	"gin-items/lib/e"
-	"gin-items/lib/setting"
-	"gin-items/lib/util"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	//"github.com/unknwon/com"
 
+	"gin-items/lib/app"
+	"gin-items/lib/e"
+	"gin-items/lib/setting"
+	"gin-items/lib/util"
 	"gin-items/service"
 )
 
-/**
-获取商品列表
- */
+//获取商品列表
 func GetItemList(c *gin.Context) {
 	appGin := app.Gin{C: c}
 

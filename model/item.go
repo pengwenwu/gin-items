@@ -4,27 +4,61 @@ type Items struct {
 	Model
 
 	ID int `gorm:"-"` // 忽略id字段
-	ItemId int `gorm:"primary_key;AUTO_INCREMENT"`
-	AppKey string `gorm:"type:char(32)"`
-	Channel int
-	Name string `gorm:"type:varchar(255)"`
-	Photo string `gorm:"type:varchar(512)"`
-	Detail string `gorm:"type:text"`
-	State int
-
-	Photos Photos
-	Parameters Parameters
-	Skus Skus
-	Props Props
+	ItemId int `gorm:"primary_key;AUTO_INCREMENT" json:"item_id"`
+	Appkey string `gorm:"type:char(32)" json:"appkey"`
+	Channel int `json:"channel"`
+	Name string `gorm:"type:varchar(255)" json:"name"`
+	Photo string `gorm:"type:varchar(512)" json:"photo"`
+	Detail string `gorm:"type:text" json:"detail"`
+	State int `json:"state"`
+	//
+	//Photos Photos `json:"photos"`
+	//Parameters Parameters `json:"parameters"`
+	//Skus Skus `json:"skus"`
+	//Props Props `json:"props"`
 }
 
-func GetItemList(offset, limit int, maps interface{}) ([]*Items, error)  {
-	var items []*Items
-	err := db.Offset(offset).Limit(limit).Find(&items).Error
+func GetItemList(offset, limit int, maps interface{}) ([]map[string]interface{}, error)  {
+	//var items []*Items
+	//err := db.Table("items").Select("name").Offset(offset).Limit(limit).Find(&items).Error
+	//if err != nil {
+	//	return nil, err
+	//}
+	//return items, nil
+	rows, err := db.Table("items").Select("name,photo,detail").Offset(offset).Limit(limit).Rows()
 	if err != nil {
 		return nil, err
 	}
-	return items, nil
+	columns, err := rows.Columns()
+	if err != nil {
+		return nil, err
+	}
+	length := len(columns)
+	result := make([]map[string]interface{}, 0)
+	for rows.Next() {
+		current := makeResultReceiver(length)
+		if err := rows.Scan(current...); err != nil {
+			return nil, err
+		}
+		value := make(map[string]interface{})
+		for i := 0; i < length; i++ {
+			k := columns[i]
+			v := current[i]
+			value[k] = v
+		}
+		result = append(result, value)
+	}
+	return result, nil
+}
+
+func makeResultReceiver(length int) []interface{}  {
+	result := make([]interface{}, 0, length)
+	for i := 0; i < length; i++ {
+		var current interface{}
+		current = struct{}{}
+		result = append(result, &current)
+	}
+	return result
 }
 
 func GetItemTotal(maps interface{}) (int, error) {
