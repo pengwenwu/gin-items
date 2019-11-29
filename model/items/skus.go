@@ -1,6 +1,10 @@
-package model
+package items
+
+import "gin-items/model"
 
 type Skus struct {
+	model.Model
+
 	Id int `gorm:"-"`
 
 	SkuId int `gorm:"primary_key;AUTO_INCREMENT"`

@@ -1,7 +1,11 @@
-package model
+package items
+
+import (
+	"gin-items/model"
+)
 
 type Props struct {
-	Model
+	model.Model
 
 	ItemId int `gorm:"index"`
 	PropName string `gorm:"type:varchar(255)"`

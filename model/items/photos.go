@@ -1,7 +1,11 @@
-package model
+package items
+
+import (
+	"gin-items/model"
+)
 
 type Photos struct {
-	Model
+	model.Model
 
 	ItemId int `gorm:"index"`
 	Photo string `gorm:"type:varchar(255)"`

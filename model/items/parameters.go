@@ -1,7 +1,11 @@
-package model
+package items
+
+import (
+	"gin-items/model"
+)
 
 type Parameters struct {
-	Model
+	model.Model
 
 	ItemId int `gorm:"index"`
 	Parameters string `gorm:"type:varchar(30)"`

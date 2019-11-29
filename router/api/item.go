@@ -4,12 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	//"github.com/unknwon/com"
 
 	"gin-items/lib/app"
 	"gin-items/lib/e"
-	"gin-items/lib/setting"
-	"gin-items/lib/util"
 	"gin-items/service"
 )
 
@@ -17,26 +14,13 @@ import (
 func GetItemList(c *gin.Context) {
 	appGin := app.Gin{C: c}
 
-	itemsService := service.Items{
-		OffSet: util.GetOffset(c),
-		PageSize: setting.PageSize,
-	}
-
-	total, err := itemsService.Count()
-	if err != nil {
-		appGin.Response(http.StatusInternalServerError, e.ErrorGetItemCount, nil)
-		return
-	}
-
-	items, err := itemsService.GetItemList()
+	itemService := service.ItemService{}
+	data, err := itemService.GetItemList(c)
 	if err != nil {
 		appGin.Response(http.StatusInternalServerError, e.ErrorGetItemListFail, nil)
 		return
 	}
 
-	data := make(map[string]interface{})
-	data["total"] = total
-	data["data"] = items
-
 	appGin.Response(http.StatusOK, e.Success, data)
+	return
 }
