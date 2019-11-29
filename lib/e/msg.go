@@ -5,8 +5,8 @@ var MsgMaps = map[int]string{
 	Error:         " fail",
 	InvalidParams: "请求参数错误",
 
-	ErrorGetItemListFail: "获取商品列表失败",
-	ErrorGetItemCount: "获取商品列表总数失败",
+	ErrorGetItemListFail: "获取商品item列表失败",
+	ErrorGetItemFail: "获取商品item失败",
 }
 
 func GetMsg(code int) string {

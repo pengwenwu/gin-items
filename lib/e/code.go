@@ -6,5 +6,5 @@ const (
 	InvalidParams 				= 400
 
 	ErrorGetItemListFail     	= 10001
-	ErrorGetItemCount			= 10002
+	ErrorGetItemFail			= 10002
 )

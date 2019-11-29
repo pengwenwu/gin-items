@@ -26,5 +26,15 @@ func GetItemList(c *gin.Context) {
 }
 
 func GetItem(c *gin.Context)  {
+	appGin := app.Gin{C: c}
 
+	itemService := service.ItemService{}
+	data, err := itemService.GetItem(c)
+	if err != nil {
+		appGin.Response(http.StatusInternalServerError, e.ErrorGetItemFail, nil)
+		return
+	}
+
+	appGin.Response(http.StatusOK, e.Success, data)
+	return
 }

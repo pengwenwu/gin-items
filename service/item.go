@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
 	"github.com/unknwon/com"
 
@@ -12,7 +13,7 @@ type ItemService struct {
 
 }
 
-func (ItemService *ItemService) GetItemList (c *gin.Context) (map[string]interface{}, error) {
+func (itemService *ItemService) GetItemList (c *gin.Context) (map[string]interface{}, error) {
 	// 获取参数 && 校验参数
 	fields := c.Query("fields")
 	itemState := c.DefaultQuery("item_state", "1")
@@ -55,4 +56,16 @@ func (ItemService *ItemService) GetItemList (c *gin.Context) (map[string]interfa
 	data["total"] = total
 
 	return data, nil
+}
+
+func (itemService *ItemService) GetItem(c *gin.Context) (map[string]interface{}, error) {
+	itemId := com.StrTo(c.Query("item_id")).MustInt()
+	fields := c.Query("fields")
+
+	valid := validation.Validation{}
+	valid.Min(itemId, 1, "item_id")
+	valid.Required(fields)
+	if valid.HasErrors() {
+
+	}
 }

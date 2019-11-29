@@ -1,9 +1,9 @@
 package app
 
 import (
-	"github.com/gin-gonic/gin"
-
 	"gin-items/lib/e"
+	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 type Gin struct {
@@ -16,10 +16,15 @@ type Response struct {
 	Data interface{} `json:"data"`
 }
 
-func (g *Gin) Response(httpCode, errCode int, data interface{}) {
-	g.C.JSON(httpCode, Response{
-		Code: errCode,
-		Msg:   e.GetMsg(errCode),
-		Data:  data,
+func (g *Gin) Response(data map[string]interface{}) {
+	httpCode := http.StatusOK
+	g.C.JSON(httpCode, gin.H{
+		"code": data["code"],
+		"msg": e.GetMsg()
 	})
+	//g.C.JSON(httpCode, Response{
+	//	Code: data["code"],
+	//	Msg:   e.GetMsg(errCode),
+	//	Data:  data,
+	//})
 }
