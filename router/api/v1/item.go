@@ -1,4 +1,4 @@
-package api
+package v1
 
 import (
 	"net/http"
@@ -23,4 +23,8 @@ func GetItemList(c *gin.Context) {
 
 	appGin.Response(http.StatusOK, e.Success, data)
 	return
+}
+
+func GetItem(c *gin.Context)  {
+
 }

@@ -8,12 +8,6 @@ import (
 	"gin-items/lib/setting"
 )
 
-type Items struct {
-	ItemId int
-	OffSet int
-	PageSize int
-}
-
 type ItemService struct {
 
 }
