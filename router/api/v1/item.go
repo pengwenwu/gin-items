@@ -1,8 +1,6 @@
 package v1
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 
 	"gin-items/lib/app"
@@ -17,11 +15,11 @@ func GetItemList(c *gin.Context) {
 	itemService := service.ItemService{}
 	data, err := itemService.GetItemList(c)
 	if err != nil {
-		appGin.Response(http.StatusInternalServerError, e.ErrorGetItemListFail, nil)
+		appGin.Response(e.ErrorGetItemListFail, nil)
 		return
 	}
 
-	appGin.Response(http.StatusOK, e.Success, data)
+	appGin.Response(e.Success, data)
 	return
 }
 
@@ -31,10 +29,10 @@ func GetItem(c *gin.Context)  {
 	itemService := service.ItemService{}
 	data, err := itemService.GetItem(c)
 	if err != nil {
-		appGin.Response(http.StatusInternalServerError, e.ErrorGetItemFail, nil)
+		appGin.Response(e.ErrorGetItemFail, nil)
 		return
 	}
 
-	appGin.Response(http.StatusOK, e.Success, data)
+	appGin.Response(e.Success, data)
 	return
 }

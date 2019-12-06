@@ -1,6 +1,7 @@
 package service
 
 import (
+	"gin-items/lib/app"
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
 	"github.com/unknwon/com"
@@ -64,8 +65,11 @@ func (itemService *ItemService) GetItem(c *gin.Context) (map[string]interface{},
 
 	valid := validation.Validation{}
 	valid.Min(itemId, 1, "item_id")
-	valid.Required(fields)
+	valid.Required(fields, "fields")
 	if valid.HasErrors() {
-
+		app.MakeErrors(valid.Errors)
 	}
+	data := make(map[string]interface{})
+
+	return data, nil
 }
