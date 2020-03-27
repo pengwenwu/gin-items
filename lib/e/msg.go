@@ -3,6 +3,7 @@ package e
 var MsgMaps = map[int]string{
 	Success:       "ok",
 	Error:         " fail",
+	ErrorContentType: "json参数获取失败",
 	InvalidParams: "请求参数错误",
 
 	ErrorGetItemListFail: "获取商品item列表失败",
