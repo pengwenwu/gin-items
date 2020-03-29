@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"net/http"
 
+	apiHTTP "gin-items/api/http"
 	"gin-items/lib/setting"
-	"gin-items/router"
 )
 
 func main()  {
-	router := router.InitRouter()
+	router := apiHTTP.InitRouter()
 
 	s := &http.Server{
 		Addr:           fmt.Sprintf(":%d", setting.HTTPPort),

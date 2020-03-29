@@ -1,12 +1,15 @@
 package service
 
 import (
-	"gin-items/lib/app"
+	"gin-items/lib/ecode"
+	v1 "gin-items/api/http/v1"
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	"github.com/unknwon/com"
 
 	"gin-items/dao"
+	"gin-items/lib/app"
 	"gin-items/lib/setting"
 )
 
@@ -14,8 +17,20 @@ type ItemService struct {
 
 }
 
-func (itemService *ItemService) GetItemList (c *gin.Context) (map[string]interface{}, error) {
+func (itemService *ItemService) GetItemList (params interface{}) (map[string]interface{}, error) {
 	// 获取参数 && 校验参数
+	valid := validation.Validation{}
+	valid.Required(params["fields"], "fields")
+
+	if valid.HasErrors() {
+		app.MakeErrors(valid.Errors)
+		return nil, errors.WithMessage(valid.Errors[0], ecode.GetMsg(ecode.InvalidParams))
+	}
+
+	fieds := params["fields"]
+
+
+
 	fields := c.Query("fields")
 	itemState := c.DefaultQuery("item_state", "1")
 	skuState := c.DefaultQuery("sku_state", "1")

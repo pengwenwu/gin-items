@@ -15,7 +15,7 @@ func GetItemList(fields string, offset, limit int, where, like, order interface{
 
 func GetItemTotal(where, like interface{}) (int, error) {
 	var count int
-	err := db.Model(&items.ItemSearches{}).Where(where).Count(&count).Error
+	err := db.Model(&item.ItemSearches{}).Where(where).Count(&count).Error
 	if err != nil {
 		return 0, err
 	}

@@ -1,10 +1,10 @@
-package e
+package ecode
 
 const (
-	Success        				= 1
+	Success        				= 200
 	Error          				= 500
-	ErrorContentType			= 400
-	InvalidParams 				= 401
+	InvalidParams 				= 400
+	UnsupportedMediaType		= 415
 
 	ErrorGetItemListFail     	= 10001
 	ErrorGetItemFail			= 10002

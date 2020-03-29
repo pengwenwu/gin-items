@@ -1,11 +1,9 @@
 package app
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 
-	"gin-items/lib/e"
+	"gin-items/lib/ecode"
 )
 
 type Gin struct {
@@ -13,18 +11,16 @@ type Gin struct {
 }
 
 type Response struct {
-	Code int `json:"code"`
-	Msg string `json:"msg"`
+	Code int         `json:"code"`
+	Msg  string      `json:"msg"`
 	Data interface{} `json:"data"`
 }
 
-func (g *Gin) Response(errCode int, data map[string]interface{}) {
-	// httpCode todo: 自动判断
-	httpCode := http.StatusOK
-
+func (g *Gin) Response(httpCode, errCode int, data interface{}) {
 	g.C.JSON(httpCode, Response{
 		Code: httpCode,
-		Msg:   e.GetMsg(errCode),
-		Data:  data,
+		Msg:  ecode.GetMsg(errCode),
+		Data: data,
 	})
+	return
 }

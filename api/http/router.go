@@ -1,11 +1,10 @@
-package router
+package http
 
 import (
 	//"gin-items/middleware/jwt"
 	"github.com/gin-gonic/gin"
 
 	"gin-items/lib/setting"
-	"gin-items/router/api/v1"
 )
 
 func InitRouter() *gin.Engine {
@@ -22,13 +21,13 @@ func InitRouter() *gin.Engine {
 
 	//r.GET("/auth", api.GetAuth)
 
-	apiv1 := r.Group("/api/v1")
+	itemGroup := r.Group("/item")
 	//apiv1.Use(jwt.Jwt())
-
 	{
 		// 获取item列表
-		apiv1.GET("/item", v1.GetItemList)
-		apiv1.GET("/item/:item_id", v1.GetItem)
+		itemGroup.GET("/item", GetItemList)
+		// 获取单个item
+		itemGroup.GET("/item/:item_id", GetItem)
 	}
 
 	return r
