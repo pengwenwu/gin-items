@@ -3,11 +3,22 @@ package http
 import (
 	//"gin-items/middleware/jwt"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 
 	"gin-items/lib/setting"
+	"gin-items/service"
+	"gin-items/model"
+	"gin-items/lib/ecode"
+)
+
+
+var (
+	serv *service.Service
 )
 
 func InitRouter() *gin.Engine {
+	initService()
+
 	r := gin.New()
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
@@ -31,4 +42,21 @@ func InitRouter() *gin.Engine {
 	}
 
 	return r
+}
+
+func initService()  {
+	serv = service.New()
+}
+
+func bind(c *gin.Context, v model.ParamValidator) (err error) {
+	if err = c.Bind(v); err != nil {
+		err = errors.WithStack(err)
+		return
+	}
+	if !v.Validate() {
+		err = ecode.RequestErr
+		c.JSON(nil, ecode.RequestErr)
+		return
+	}
+	return
 }

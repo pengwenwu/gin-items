@@ -2,10 +2,9 @@ package http
 
 import (
 	"gin-items/lib/app"
-	"gin-items/lib/define"
 	"gin-items/lib/ecode"
-	"gin-items/service"
 	"gin-items/model/item"
+	"gin-items/service"
 
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -17,23 +16,17 @@ func GetItemList(c *gin.Context) {
 
 	params := new(item.ArgItemSearch)
 	if err := c.Bind(params); err != nil {
-		httpResponse()
-	}
-	params := itemListParams {
-		ItemState: define.ITEM_STATE_NORMAL,
-		SkuState: define.ITEM_SKU_STATE_NORMAL,
-	}
-	if c.BindJSON(&params) != nil {
 		appGin.Response(http.StatusUnsupportedMediaType, ecode.UnsupportedMediaType, nil)
 		return
 	}
-	//data := make(map[string]interface{})
-	//data["params"] = params;
-	//appGin.Response(http.StatusOK, ecode.Success, data)
-	//return
+	data := make(map[string]interface{})
+	data["params"] = params
+	appGin.Response(http.StatusOK, ecode.Success, data)
+	return
+
 
 	itemService := service.ItemService{}
-	data, err := itemService.GetItemList(params)
+	data, err := service.GetItemList(params)
 	if err != nil {
 		appGin.Response(http.StatusInternalServerError, ecode.ErrorGetItemListFail, nil)
 		return

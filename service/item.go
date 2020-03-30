@@ -2,7 +2,6 @@ package service
 
 import (
 	"gin-items/lib/ecode"
-	v1 "gin-items/api/http/v1"
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
@@ -13,11 +12,9 @@ import (
 	"gin-items/lib/setting"
 )
 
-type ItemService struct {
 
-}
 
-func (itemService *ItemService) GetItemList (params interface{}) (map[string]interface{}, error) {
+func (service *Service) GetItemList (params map[string]interface{}) (map[string]interface{}, error) {
 	// 获取参数 && 校验参数
 	valid := validation.Validation{}
 	valid.Required(params["fields"], "fields")
