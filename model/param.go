@@ -1,13 +1,9 @@
-package item
+package model
 
-import (
-	"gin-items/model"
-)
-
-//// ParamValidator .
-//type ParamValidator interface {
-//	model.ParamValidator
-//}
+// ParamValidator .
+type ParamValidator interface {
+	Validate() bool
+}
 
 // ArgItemSearch param struct
 type ArgItemSearch struct {

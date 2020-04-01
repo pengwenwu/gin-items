@@ -8,7 +8,7 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 
-	"gin-items/lib/setting"
+	"gin-items/library/setting"
 )
 
 var db *gorm.DB

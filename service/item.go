@@ -1,20 +1,22 @@
 package service
 
 import (
-	"gin-items/lib/ecode"
+	"gin-items/model"
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"github.com/unknwon/com"
 
 	"gin-items/dao"
-	"gin-items/lib/app"
-	"gin-items/lib/setting"
+	"gin-items/library/app"
+	"gin-items/library/ecode"
+	"gin-items/library/setting"
+	"gin-items/model/item"
 )
 
 
 
-func (service *Service) GetItemList (params map[string]interface{}) (map[string]interface{}, error) {
+func (service *Service) GetItemList (params *model.ArgItemSearch) (itemList []*item.ItemList, err error) {
 	// 获取参数 && 校验参数
 	valid := validation.Validation{}
 	valid.Required(params["fields"], "fields")

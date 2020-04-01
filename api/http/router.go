@@ -4,11 +4,12 @@ import (
 	//"gin-items/middleware/jwt"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
+	"net/http"
 
-	"gin-items/lib/setting"
+	"gin-items/library/setting"
 	"gin-items/service"
 	"gin-items/model"
-	"gin-items/lib/ecode"
+	"gin-items/library/ecode"
 )
 
 
@@ -55,7 +56,9 @@ func bind(c *gin.Context, v model.ParamValidator) (err error) {
 	}
 	if !v.Validate() {
 		err = ecode.RequestErr
-		c.JSON(nil, ecode.RequestErr)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code": ecode.InvalidParams,
+		})
 		return
 	}
 	return

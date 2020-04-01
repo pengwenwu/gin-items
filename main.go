@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	apiHTTP "gin-items/api/http"
-	"gin-items/lib/setting"
+	"gin-items/library/setting"
 )
 
 func main()  {

@@ -1,9 +1,9 @@
 package http
 
 import (
-	"gin-items/lib/app"
-	"gin-items/lib/ecode"
-	"gin-items/model/item"
+	"gin-items/library/app"
+	"gin-items/library/ecode"
+	"gin-items/model"
 	"gin-items/service"
 
 	"github.com/gin-gonic/gin"
@@ -14,7 +14,18 @@ import (
 func GetItemList(c *gin.Context) {
 	appGin := app.Gin{C: c}
 
-	params := new(item.ArgItemSearch)
+	var (
+		err error
+		argItemSearch = &model.ArgItemSearch{}
+	)
+	if err = bind(c, argItemSearch); err != nil {
+		return
+	}
+	appGin.Response(serv.GetItemList(argItemSearch))
+	c.JSON(svc.Search(c, v.MIDs))
+
+
+	params := new(model.ArgItemSearch)
 	if err := c.Bind(params); err != nil {
 		appGin.Response(http.StatusUnsupportedMediaType, ecode.UnsupportedMediaType, nil)
 		return

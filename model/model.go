@@ -1,12 +1,10 @@
 package model
 
-// ParamValidator .
-type ParamValidator interface {
-	Validate() bool
-}
+import (
+	"time"
+)
 
 type Model struct {
-	LastDated string `json:"last_dated"`
-	Dated string `json:"dated"`
+	LastDated time.Time `json:"last_dated"`
+	Dated     time.Time `json:"dated"`
 }
-
