@@ -40,7 +40,7 @@ type ItemProps struct {
 	State     int    `gorm:"column:state" json:"state"`
 }
 
-type ItemPropValue struct {
+type ItemPropValues struct {
 	Model
 
 	Id            int    `gorm:"column:id" json:"id"`
@@ -88,4 +88,40 @@ type ItemSearches struct {
 	SkuCode   string `gorm:"column:sku_code" json:"sku_code"`
 	ItemState int    `gorm:"column:item_state" json:"item_state"`
 	SkuState  int    `gorm:"column:sku_state" json:"sku_state"`
+}
+
+type Item struct {
+	Items
+	Photos     *ItemPhotos
+	Parameters *ItemParameters
+	Skus       *ItemSkus
+	Props      *ItemProps
+}
+
+func (Items) TableName() string {
+	return "items"
+}
+
+func (*ItemSkus) TableName() string {
+	return "item_skus"
+}
+
+func (*ItemSearches) TableName() string {
+	return "item_searched"
+}
+
+func (*ItemProps) TableName() string {
+	return "item_props"
+}
+
+func (*ItemPropValues) TableName() string {
+	return "item_prop_values"
+}
+
+func (*ItemPhotos) TableName() string {
+	return "item_photos"
+}
+
+func (*ItemParameters) TableName() string {
+	return "item_parameters"
 }

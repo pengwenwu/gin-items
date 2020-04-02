@@ -1,7 +1,6 @@
 package service
 
 import (
-	"gin-items/model"
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
@@ -11,23 +10,12 @@ import (
 	"gin-items/library/app"
 	"gin-items/library/ecode"
 	"gin-items/library/setting"
-	"gin-items/model/item"
+	"gin-items/model"
 )
 
 
 
-func (service *Service) GetItemList (params *model.ArgItemSearch) (itemList []*item.ItemList, err error) {
-	// 获取参数 && 校验参数
-	valid := validation.Validation{}
-	valid.Required(params["fields"], "fields")
-
-	if valid.HasErrors() {
-		app.MakeErrors(valid.Errors)
-		return nil, errors.WithMessage(valid.Errors[0], ecode.GetMsg(ecode.InvalidParams))
-	}
-
-	fieds := params["fields"]
-
+func (service *Service) GetItemList (params *model.ArgItemSearch) (itemList []*model.Item, total int, err error) {
 
 
 	fields := c.Query("fields")

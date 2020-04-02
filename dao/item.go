@@ -1,8 +1,12 @@
 package dao
 
 import (
-	"gin-items/model/items"
+	"gin-items/model"
 )
+
+func (d *Dao) SearchItem(arg *model.ArgItemSearch) (itemIds []int, total int, err error)  {
+	d.DB.Table(model.Item.TableName()).Rows()
+}
 
 func GetItemList(fields string, offset, limit int, where, like, order interface{}) ([]map[string]string, error)  {
 	rows, err := db.Table("item_searches").Where(where).Offset(offset).Limit(limit).Rows()

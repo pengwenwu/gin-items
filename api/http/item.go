@@ -21,29 +21,13 @@ func GetItemList(c *gin.Context) {
 	if err = bind(c, argItemSearch); err != nil {
 		return
 	}
-	appGin.Response(serv.GetItemList(argItemSearch))
-	c.JSON(svc.Search(c, v.MIDs))
-
-
-	params := new(model.ArgItemSearch)
-	if err := c.Bind(params); err != nil {
-		appGin.Response(http.StatusUnsupportedMediaType, ecode.UnsupportedMediaType, nil)
-		return
+	list, total, err := serv.GetItemList(argItemSearch)
+	type pageData struct {
+		Data []*model.Item
+		Total int
 	}
-	data := make(map[string]interface{})
-	data["params"] = params
-	appGin.Response(http.StatusOK, ecode.Success, data)
-	return
-
-
-	itemService := service.ItemService{}
-	data, err := service.GetItemList(params)
-	if err != nil {
-		appGin.Response(http.StatusInternalServerError, ecode.ErrorGetItemListFail, nil)
-		return
-	}
-
-	appGin.Response(http.StatusOK, ecode.Success, data)
+	data := pageData{list, total}
+	appGin.Response(data, err)
 	return
 }
 
