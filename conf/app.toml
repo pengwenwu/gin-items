@@ -1,6 +1,7 @@
 run_mode = "debug"
 
 [app]
+    page = 1
     page_size = 10
     jwt_secret = "23347$040412"
 

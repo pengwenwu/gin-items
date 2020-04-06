@@ -33,13 +33,13 @@ func InitRouter() *gin.Engine {
 
 	//r.GET("/auth", api.GetAuth)
 
-	itemGroup := r.Group("/item")
+	itemGroup := r.Group("")
 	//apiv1.Use(jwt.Jwt())
 	{
 		// 获取item列表
 		itemGroup.GET("/item", GetItemList)
 		// 获取单个item
-		itemGroup.GET("/item/:item_id", GetItem)
+		itemGroup.GET("/item/:item_id", GetItemById)
 	}
 
 	return r
@@ -50,7 +50,7 @@ func initService()  {
 }
 
 func bind(c *gin.Context, v model.ParamValidator) (err error) {
-	if err = c.Bind(v); err != nil {
+	if err = c.Bind(&v); err != nil {
 		err = errors.WithStack(err)
 		return
 	}

@@ -2,26 +2,42 @@ package dao
 
 import (
 	"gin-items/model"
+	"github.com/pkg/errors"
 )
 
-func (d *Dao) SearchItem(arg *model.ArgItemSearch) (itemIds []int, total int, err error)  {
-	d.DB.Table(model.Item.TableName()).Rows()
-}
+//func (d *Dao) SearchItem(arg *model.ArgItemSearch) (itemIds []int, total int, err error)  {
+//	d.DB.Table(model.Item{}.TableName()).Rows()
+//}
 
-func GetItemList(fields string, offset, limit int, where, like, order interface{}) ([]map[string]string, error)  {
-	rows, err := db.Table("item_searches").Where(where).Offset(offset).Limit(limit).Rows()
+func (dao *Dao) GetSearchItemIds(params model.ArgItemSearch, fields string, offset, limit int, where map[string]interface{}) (itemIds []int, err error)  {
+	rows, err := dao.DB.Table(params.TableName()).Where(where).Offset(offset).Limit(limit).Rows()
 	if err != nil {
-		return nil, err
+		return
 	}
-	result := Rows2SliceMap(rows)
-	return result, nil
+	for rows.Next() {
+		var itemId int
+		if err = rows.Scan(&itemId); err != nil {
+			err = errors.WithStack(err)
+			return
+		}
+		itemIds = append(itemIds, itemId)
+	}
+	return
 }
 
-func GetItemTotal(where, like interface{}) (int, error) {
+func (dao *Dao) GetSearchItemTotal(where interface{}) (int, error) {
 	var count int
-	err := db.Model(&item.ItemSearches{}).Where(where).Count(&count).Error
+	err := dao.DB.Model(&model.ItemSearches{}).Where(where).Count(&count).Error
 	if err != nil {
 		return 0, err
 	}
 	return count, nil
+}
+
+func (dao *Dao) GetItemById(itemId int, fields string) (item model.Item, err error) {
+	err = dao.DB.Table(item.TableName()).Where("item_id = ?", itemId).Find(&item).Error
+	if err != nil {
+		return
+	}
+	return
 }

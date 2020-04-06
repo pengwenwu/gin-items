@@ -22,7 +22,7 @@ func New() (d *Dao) {
 	return
 }
 
-func (d *Dao) init() {
+func (dao *Dao) init() {
 	var (
 		err error
 		dbType, dbName, user, password, host, tablePrefix string
@@ -34,7 +34,7 @@ func (d *Dao) init() {
 	host = setting.Config().DB.Host
 	tablePrefix = setting.Config().DB.TablePrefix
 
-	d.DB, err = gorm.Open(dbType, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
+	dao.DB, err = gorm.Open(dbType, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
 		user,
 		password,
 		host,
@@ -47,13 +47,13 @@ func (d *Dao) init() {
 		return tablePrefix + defaultTableName
 	}
 
-	d.DB.SingularTable(true)
-	d.DB.DB().SetMaxIdleConns(10)
-	d.DB.DB().SetMaxOpenConns(100)
+	dao.DB.SingularTable(true)
+	dao.DB.DB().SetMaxIdleConns(10)
+	dao.DB.DB().SetMaxOpenConns(100)
 }
 
-func (d *Dao) CloseDB() {
-	defer d.DB.Close()
+func (dao *Dao) CloseDB() {
+	defer dao.DB.Close()
 }
 
 // 结果集转切片

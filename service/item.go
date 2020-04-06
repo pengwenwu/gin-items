@@ -2,76 +2,37 @@ package service
 
 import (
 	"github.com/astaxie/beego/validation"
-	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
-	"github.com/unknwon/com"
 
-	"gin-items/dao"
-	"gin-items/library/app"
 	"gin-items/library/ecode"
-	"gin-items/library/setting"
 	"gin-items/model"
 )
 
-
-
-func (service *Service) GetItemList (params *model.ArgItemSearch) (itemList []*model.Item, total int, err error) {
-
-
-	fields := c.Query("fields")
-	itemState := c.DefaultQuery("item_state", "1")
-	skuState := c.DefaultQuery("sku_state", "1")
-	like := c.QueryMap("like")
-	order := c.QueryMap("order")
-	page := com.StrTo(c.DefaultQuery("page", "1")).MustInt()
-	pageSize := com.StrTo(c.DefaultQuery("limit", com.ToStr(setting.PageSize))).MustInt()
-	offset := (page - 1) * pageSize
-
-	where := make(map[string]interface{})
-	where["item_id"] = com.StrTo(c.Query("item_id")).MustInt()
-	where["sku_id"] = com.StrTo(c.Query("sku_id")).MustInt()
-	where["bar_code"] = com.ToStr(c.Query("bar_code"))
-	where["sku_code"] = com.ToStr(c.Query("sku_code"))
-	for k := range where {
-		if where[k] == "" || where[k] == 0 {
-			delete(where, k)
-		}
-	}
-	where["item_state"] = com.StrTo(itemState).MustInt()
-	where["sku_state"] = com.StrTo(skuState).MustInt()
-
-	for k, v := range like {
-		// 对外仅暴露name
-		if k == "name" {
-			like["sku_name"] = v
-			delete(like, k)
-		}
-	}
-
-	items, err := dao.GetItemList(fields, offset, pageSize, where, like, order)
+func (serv *Service) GetItemList(params model.ArgItemSearch) (itemList []*model.Item, total int, err error) {
+	fields := params.Fields
+	offset := (params.Page - 1) * params.PageSize
+	whereMap := params.GetWhereMap()
+	serv.dao.GetSearchItemIds(params, fields, offset, params.PageSize, whereMap)
 	if err != nil {
-		return nil, err
+		return
 	}
-	total, err := dao.GetItemTotal(where, like)
+	total, err = serv.dao.GetSearchItemTotal(whereMap)
+	if total <= 0 {
+		return
+	}
 
-	data := make(map[string]interface{})
-	data["list"] = items
-	data["total"] = total
-
-	return data, nil
+	// 查询对应的商品详情
+	return
 }
 
-func (itemService *ItemService) GetItem(c *gin.Context) (map[string]interface{}, error) {
-	itemId := com.StrTo(c.Query("item_id")).MustInt()
-	fields := c.Query("fields")
-
+func (serv *Service) GetItemById(params model.ArgGetItemById, itemId int) (item model.Item, err error) {
 	valid := validation.Validation{}
 	valid.Min(itemId, 1, "item_id")
-	valid.Required(fields, "fields")
+	valid.Required(params, "fields")
 	if valid.HasErrors() {
-		app.MakeErrors(valid.Errors)
+		err = ecode.ItemIllegalItemId
+		return
 	}
-	data := make(map[string]interface{})
 
-	return data, nil
+	item, err = serv.dao.GetItemById(itemId, params.Fields)
+	return
 }

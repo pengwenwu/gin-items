@@ -7,23 +7,46 @@ type ParamValidator interface {
 
 // ArgItemSearch param struct
 type ArgItemSearch struct {
-	ItemId    int                      `form:"item_id"`
-	SkuId     int                      `form:"sku_id"`
-	BarCode   string                   `form:"bar_code"`
-	SkuCode   string                   `form:"sku_code"`
-	ItemState int                      `form:"item_state"`
-	SkuState  int                      `form:"sku_state"`
-	Name      string                   `form:"name"`
-	WhereIn   map[string][]interface{} `form:"where_in"`
-	Like      map[string][]interface{} `form:"like"`
-	Fields    string                   `form:"fields"`
-	Page      int                      `form:"page" default:"1"`
-	PageSize  int                      `form:"page_size" default:"20"`
-	Order     string                   `form:"order" default:"item_id"`
-	Desc      string                   `form:"desc" default:"desc"`
+	ItemId    int                      `json:"item_id"`
+	SkuId     int                      `json:"sku_id"`
+	BarCode   string                   `json:"bar_code"`
+	SkuCode   string                   `json:"sku_code"`
+	ItemState int                      `json:"item_state"`
+	SkuState  int                      `json:"sku_state"`
+	Name      string                   `json:"name"`
+	WhereIn   WhereIn                  `json:"where_in"`
+	Like      map[string][]interface{} `json:"like"`
+	Fields    string                   `json:"fields"`
+	Page      int                      `json:"page"`
+	PageSize  int                      `json:"page_size"`
+	Order     string                   `json:"order"`
+	Desc      string                   `json:"desc"`
+}
+
+type WhereIn struct {
+	ItemId []int `json:"item_id"`
+}
+
+type ArgGetItemById struct {
+	Fields string `json:"fields"`
 }
 
 // Validate .
-func (p *ArgItemSearch) Validate() bool {
+func (a ArgItemSearch) Validate() bool {
 	return true
+}
+
+func (a ArgItemSearch) GetWhereMap() (whereMap map[string]interface{}) {
+	whereMap = make(map[string]interface{})
+	if a.BarCode != "" {
+		whereMap["bar_code"] = a.BarCode
+	}
+	if a.Name != "" {
+		whereMap["sku_name"] = a.Name
+	}
+	return
+}
+
+func (a ArgItemSearch) TableName() string {
+	return "item_searches"
 }

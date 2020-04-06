@@ -1,8 +1,6 @@
 package model
 
 type Items struct {
-	Model
-
 	ItemId  int    `gorm:"column:item_id" json:"item_id"`
 	Appkey  string `gorm:"column:appkey" json:"appkey"`
 	Channel int    `gorm:"column:channel" json:"channel"`
@@ -10,11 +8,10 @@ type Items struct {
 	Photo   string `gorm:"column:photo" json:"photo"`
 	Detail  string `gorm:"column:detail" json:"detail"`
 	State   int    `gorm:"column:state" json:"state"`
+	Model
 }
 
 type ItemSkus struct {
-	Model
-
 	SkuId      int    `gorm:"column:sku_id" json:"sku_id"`
 	ItemId     int    `gorm:"column:item_id" json:"item_id"`
 	Appkey     string `gorm:"column:appkey" json:"appkey"`
@@ -26,11 +23,10 @@ type ItemSkus struct {
 	BarCode    string `gorm:"column:bar_code" json:"bar_code"`
 	Properties string `gorm:"column:properties" json:"properties"`
 	State      int    `gorm:"column:state" json:"state"`
+	Model
 }
 
 type ItemProps struct {
-	Model
-
 	Id        int    `gorm:"column:id" json:"id"`
 	ItemId    int    `gorm:"column:item_id" json:"item_id"`
 	PropName  string `gorm:"column:prop_name" json:"prop_name"`
@@ -38,11 +34,10 @@ type ItemProps struct {
 	HavePhoto int    `gorm:"column:have_photo" json:"have_photo"`
 	PropDesc  string `gorm:"column:prop_desc" json:"prop_desc"`
 	State     int    `gorm:"column:state" json:"state"`
+	Model
 }
 
 type ItemPropValues struct {
-	Model
-
 	Id            int    `gorm:"column:id" json:"id"`
 	ItemId        int    `gorm:"column:item_id" json:"item_id"`
 	PropName      string `gorm:"column:prop_name" json:"prop_name"`
@@ -52,32 +47,29 @@ type ItemPropValues struct {
 	PropDesc      string `gorm:"column:prop_desc" json:"prop_desc"`
 	AssistedNum   int    `gorm:"column:assisted_num" json:"assisted_num"`
 	State         int    `gorm:"column:state" json:"state"`
+	Model
 }
 
 type ItemPhotos struct {
-	Model
-
 	Id     int    `gorm:"column:id" json:"id"`
 	ItemId int    `gorm:"column:item_id" json:"item_id"`
 	Photo  string `gorm:"type:varchar(255)"`
 	Sort   int    `gorm:"column:sort" json:"sort"`
 	State  int    `gorm:"column:state" json:"state"`
+	Model
 }
 
 type ItemParameters struct {
-	Model
-
 	Id         int    `gorm:"column:id" json:"id"`
 	ItemId     int    `gorm:"column:item_id" json:"item_id"`
 	Parameters string `gorm:"column:parameters" json:"parameters"`
 	Value      string `gorm:"column:value" json:"value"`
 	State      int    `gorm:"column:state" json:"state"`
 	Sort       int    `gorm:"column:sort" json:"sort"`
+	Model
 }
 
 type ItemSearches struct {
-	Model
-
 	Id        int    `gorm:"column:id" json:"id"`
 	Appkey    string `gorm:"column:appkey" json:"appkey"`
 	Channel   int    `gorm:"column:channel" json:"channel"`
@@ -88,40 +80,41 @@ type ItemSearches struct {
 	SkuCode   string `gorm:"column:sku_code" json:"sku_code"`
 	ItemState int    `gorm:"column:item_state" json:"item_state"`
 	SkuState  int    `gorm:"column:sku_state" json:"sku_state"`
+	Model
 }
 
 type Item struct {
 	Items
-	Photos     *ItemPhotos
-	Parameters *ItemParameters
-	Skus       *ItemSkus
-	Props      *ItemProps
+	Photos     *ItemPhotos `json:"photos,omitempty"`
+	Parameters *ItemParameters `json:"parameters,omitempty"`
+	Skus       *ItemSkus `json:"skus,omitempty"`
+	Props      *ItemProps `json:"props,omitempty"`
 }
 
 func (Items) TableName() string {
 	return "items"
 }
 
-func (*ItemSkus) TableName() string {
+func (ItemSkus) TableName() string {
 	return "item_skus"
 }
 
-func (*ItemSearches) TableName() string {
-	return "item_searched"
+func (ItemSearches) TableName() string {
+	return "item_searches"
 }
 
-func (*ItemProps) TableName() string {
+func (ItemProps) TableName() string {
 	return "item_props"
 }
 
-func (*ItemPropValues) TableName() string {
+func (ItemPropValues) TableName() string {
 	return "item_prop_values"
 }
 
-func (*ItemPhotos) TableName() string {
+func (ItemPhotos) TableName() string {
 	return "item_photos"
 }
 
-func (*ItemParameters) TableName() string {
+func (ItemParameters) TableName() string {
 	return "item_parameters"
 }

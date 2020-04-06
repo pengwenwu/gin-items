@@ -1,29 +1,32 @@
 package http
 
 import (
-	"gin-items/library/app"
-	"gin-items/library/ecode"
-	"gin-items/model"
-	"gin-items/service"
-
 	"github.com/gin-gonic/gin"
-	"net/http"
+	"github.com/unknwon/com"
+
+	"gin-items/library/app"
+	"gin-items/library/setting"
+	"gin-items/model"
 )
 
 //获取商品列表
 func GetItemList(c *gin.Context) {
 	appGin := app.Gin{C: c}
 
-	var (
-		err error
-		argItemSearch = &model.ArgItemSearch{}
-	)
-	if err = bind(c, argItemSearch); err != nil {
+	argItemSearch := model.ArgItemSearch{
+		Page:     setting.Page,
+		PageSize: setting.PageSize,
+		Order:    "item_id",
+		Desc:     "desc",
+	}
+
+	if err := c.BindJSON(&argItemSearch); err != nil {
 		return
 	}
+
 	list, total, err := serv.GetItemList(argItemSearch)
 	type pageData struct {
-		Data []*model.Item
+		Data  []*model.Item
 		Total int
 	}
 	data := pageData{list, total}
@@ -31,16 +34,18 @@ func GetItemList(c *gin.Context) {
 	return
 }
 
-func GetItem(c *gin.Context) {
+func GetItemById(c *gin.Context) {
 	appGin := app.Gin{C: c}
 
-	itemService := service.ItemService{}
-	data, err := itemService.GetItem(c)
+	itemId := com.StrTo(c.Param("item_id")).MustInt()
+	argGetItemById := model.ArgGetItemById{}
+
+	item, err := serv.GetItemById(argGetItemById, itemId)
 	if err != nil {
-		appGin.Response(http.StatusInternalServerError, ecode.ErrorGetItemFail, nil)
+		appGin.Response(nil, err)
 		return
 	}
 
-	appGin.Response(http.StatusOK, ecode.Success, data)
+	appGin.Response(item, nil)
 	return
 }
