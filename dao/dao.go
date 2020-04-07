@@ -34,7 +34,7 @@ func (dao *Dao) init() {
 	host = setting.Config().DB.Host
 	tablePrefix = setting.Config().DB.TablePrefix
 
-	dao.DB, err = gorm.Open(dbType, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
+	dao.DB, err = gorm.Open(dbType, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8",
 		user,
 		password,
 		host,
