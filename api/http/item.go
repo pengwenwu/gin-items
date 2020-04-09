@@ -39,6 +39,10 @@ func GetItemById(c *gin.Context) {
 
 	itemId := com.StrTo(c.Param("item_id")).MustInt()
 	argGetItemById := model.ArgGetItemById{}
+	if err := c.BindJSON(&argGetItemById);err != nil{
+		//appGin.Response(nil, err)
+		return
+	}
 
 	item, err := serv.GetItemById(argGetItemById, itemId)
 	if err != nil {

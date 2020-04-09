@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+	"gin-items/helper"
 	"github.com/astaxie/beego/validation"
 
 	"gin-items/library/ecode"
@@ -27,11 +29,15 @@ func (serv *Service) GetItemList(params model.ArgItemSearch) (itemList []*model.
 func (serv *Service) GetItemById(params model.ArgGetItemById, itemId int) (item model.Item, err error) {
 	valid := validation.Validation{}
 	valid.Min(itemId, 1, "item_id")
-	valid.Required(params, "fields")
+	valid.Required(params.Fields, "fields")
 	if valid.HasErrors() {
 		err = ecode.ItemIllegalItemId
 		return
 	}
+	//[]string{"item_id", "appkey", "channel", "name", "photo", "detail", "state", "last_dated", "dated"}
+	//[]string{"photos.id", "photos.item_id", "photos.photo", "photos.sort", "photos.state", "photos.last_dated", "photos.dated"}
+	getField := helper.GetVerifyField([]string{"photos.id", "photos.item_id", "photos.photo", "photos.sort", "photos.state", "photos.last_dated", "photos.dated"}, params.Fields)
+	fmt.Println(getField)
 
 	item, err = serv.dao.GetItemById(itemId, params.Fields)
 	return
