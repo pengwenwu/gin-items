@@ -57,7 +57,7 @@ func (dao *Dao) CloseDB() {
 }
 
 // 结果集转切片
-func Rows2SliceMap(rows *sql.Rows) (list []map[string]string) {
+func RowsToSliceMap(rows *sql.Rows) (list []map[string]string) {
 	//字段名称
 	columns, _ := rows.Columns()
 	//多少个字段
@@ -66,11 +66,9 @@ func Rows2SliceMap(rows *sql.Rows) (list []map[string]string) {
 	values := make([]sql.RawBytes, length)
 	//保存的是values的内存地址
 	pointer := make([]interface{}, length)
-	//
 	for i := 0; i < length; i++ {
 		pointer[i] = &values[i]
 	}
-	//
 	for rows.Next() {
 		//把参数展开，把每一行的值存到指定的内存地址去，循环覆盖，values也就跟着被赋值了
 		rows.Scan(pointer...)
@@ -81,6 +79,5 @@ func Rows2SliceMap(rows *sql.Rows) (list []map[string]string) {
 		}
 		list = append(list, row)
 	}
-	//
 	return
 }

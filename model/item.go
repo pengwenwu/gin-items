@@ -1,13 +1,17 @@
 package model
 
+import (
+	"reflect"
+)
+
 type Items struct {
 	ItemId  int    `gorm:"column:item_id" json:"item_id"`
 	Appkey  string `gorm:"column:appkey" json:"appkey"`
 	Channel int    `gorm:"column:channel" json:"channel"`
 	Name    string `gorm:"column:name" json:"name"`
-	Photo   string `gorm:"column:photo" json:"photo"`
-	Detail  string `gorm:"column:detail" json:"detail"`
-	State   int    `gorm:"column:state" json:"state"`
+	Photo   string `gorm:"column:photo" json:"photo,omitempty"`
+	Detail  string `gorm:"column:detail" json:"detail,omitempty"`
+	State   int    `gorm:"column:state" json:"state,omitempty"`
 	Model
 }
 
@@ -34,6 +38,7 @@ type ItemProps struct {
 	HavePhoto int    `gorm:"column:have_photo" json:"have_photo"`
 	PropDesc  string `gorm:"column:prop_desc" json:"prop_desc"`
 	State     int    `gorm:"column:state" json:"state"`
+	Values    []ItemPropValues `json:"values"`
 	Model
 }
 
@@ -53,7 +58,7 @@ type ItemPropValues struct {
 type ItemPhotos struct {
 	Id     int    `gorm:"column:id" json:"id"`
 	ItemId int    `gorm:"column:item_id" json:"item_id"`
-	Photo  string `gorm:"type:varchar(255)"`
+	Photo  string `gorm:"column:photo" json:"photo"`
 	Sort   int    `gorm:"column:sort" json:"sort"`
 	State  int    `gorm:"column:state" json:"state"`
 	Model
@@ -84,7 +89,7 @@ type ItemSearches struct {
 }
 
 type Item struct {
-	Items
+	Base Items
 	Photos     *ItemPhotos `json:"photos,omitempty"`
 	Parameters *ItemParameters `json:"parameters,omitempty"`
 	Skus       *ItemSkus `json:"skus,omitempty"`
@@ -117,4 +122,21 @@ func (ItemPhotos) TableName() string {
 
 func (ItemParameters) TableName() string {
 	return "item_parameters"
+}
+
+func GetFields(i interface{}) (fields []string) {
+	t:=reflect.TypeOf(i)
+	v := reflect.ValueOf(i)
+	for i:=0;i<t.NumField();i++{
+		if v.Field(i).Type().Kind() == reflect.Struct{
+			structField := v.Field(i).Type()
+			for j :=0 ; j< structField.NumField(); j++ {
+				fields = append(fields, structField.Field(j).Tag.Get("json"))
+			}
+			continue
+		}
+		sf:=t.Field(i)
+		fields = append(fields, sf.Tag.Get("json"))
+	}
+	return
 }
