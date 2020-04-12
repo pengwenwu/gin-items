@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"gin-items/library/define"
 	"github.com/astaxie/beego/validation"
 
@@ -84,12 +83,11 @@ func (serv *Service) getPropsData(itemId int) (propsData []model.ItemProps, err 
 		return
 	}
 	where["state"] = define.ITEM_PROPS_VALUES_STATE_NORMAL
-	for _,v := range propsData {
+	for k,v := range propsData {
 		where["prop_name"] = v.PropName
 		var tmp []model.ItemPropValues
 		tmp, err = serv.dao.GetItemPropValues(where, "sort asc", 1, 20)
-		v.Values = tmp
-		fmt.Printf("%+v", tmp)
+		propsData[k].Values = append(v.Values, tmp...)
 	}
 	return
 }
