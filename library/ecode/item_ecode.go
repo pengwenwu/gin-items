@@ -4,5 +4,6 @@ package ecode
 // item ecode interval is [1000, 1999]
 
 var (
-	ItemIllegalItemId = New(1000)
+	ItemIllegalItemId = New(1000) // item_id非法
+	ItemConvertTypeErr = New(1001) // item转换数据类型失败
 )

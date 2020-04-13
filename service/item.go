@@ -26,7 +26,7 @@ func (serv *Service) GetItemList(params model.ArgItemSearch) (itemList []*model.
 	return
 }
 
-func (serv *Service) GetItemById(params model.ArgGetItemById, itemId int) (item map[string]interface{}, err error) {
+func (serv *Service) GetItemById(params model.ArgGetItemById, itemId , skuState int) (item map[string]interface{}, err error) {
 	valid := validation.Validation{}
 	valid.Min(itemId, 1, "item_id")
 	valid.Required(params.Fields, "fields")
@@ -53,15 +53,15 @@ func (serv *Service) GetItemById(params model.ArgGetItemById, itemId int) (item 
 				item[k] = v
 			}
 		case "photos":
-			where["state"] = define.ITEM_PHOTOS_STATE_NORMAL
+			where["state"] = define.ItemPhotosStateNormal
 			list, err = serv.dao.GetItemPhotos(getField, where, "sort asc", 1, 20)
 			item["photos"] = list
 		case "parameters":
-			where["state"] = define.ITEM_PARAMETERS_STATE_NORMAL
+			where["state"] = define.ItemParametersStateNormal
 			list, err = serv.dao.GetItemParameters(getField, where, "sort asc", 1, 300)
 			item["parameters"] = list
 		case "skus":
-			where["state"] = define.ITEM_SKU_STATE_NORMAL
+			where["state"] = skuState
 			list, err = serv.dao.GetItemSkus(getField, where, "", 1, 20)
 			item["skus"] = list
 		case "props":
@@ -77,12 +77,12 @@ func (serv *Service) GetItemById(params model.ArgGetItemById, itemId int) (item 
 func (serv *Service) getPropsData(itemId int) (propsData []model.ItemProps, err error) {
 	where := make(map[string]interface{})
 	where["item_id"] = itemId
-	where["state"] = define.ITEM_PROPS_STATE_NORMAL
+	where["state"] = define.ItemPropsStateNormal
 	propsData, err = serv.dao.GetItemProps(where, "sort asc", 1, 20)
 	if err != nil {
 		return
 	}
-	where["state"] = define.ITEM_PROPS_VALUES_STATE_NORMAL
+	where["state"] = define.ItemPropsValuesStateNormal
 	for k,v := range propsData {
 		where["prop_name"] = v.PropName
 		var tmp []model.ItemPropValues
