@@ -26,7 +26,7 @@ func (serv *Service) GetItemList(params model.ArgItemSearch) (itemList []*model.
 	return
 }
 
-func (serv *Service) GetItemById(params model.ArgGetItemById, itemId , skuState int) (item map[string]interface{}, err error) {
+func (serv *Service) GetItemById(params model.ArgGetItemById, itemId int, skuState interface{}) (item map[string]interface{}, err error) {
 	valid := validation.Validation{}
 	valid.Min(itemId, 1, "item_id")
 	valid.Required(params.Fields, "fields")

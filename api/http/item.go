@@ -1,9 +1,7 @@
 package http
 
 import (
-	"fmt"
 	"gin-items/library/define"
-	"gin-items/library/ecode"
 	"github.com/gin-gonic/gin"
 	"github.com/unknwon/com"
 
@@ -43,22 +41,14 @@ func GetItemById(c *gin.Context) {
 	itemId := com.StrTo(c.Param("item_id")).MustInt()
 	argGetItemById := model.ArgGetItemById{}
 	if err := c.BindJSON(&argGetItemById);err != nil{
-		//appGin.Response(nil, err)
+		appGin.Response(nil, err)
 		return
 	}
 	// 先获取item的状态
 	argGetItemState := model.ArgGetItemById{Fields:"item_id,state"}
 	itemInfo, err := serv.GetItemById(argGetItemState, itemId, define.ItemSkuStateNormal)
-	itemState, ok := itemInfo["state"].(int)
-	fmt.Printf("%+v", itemInfo)
-	fmt.Println(itemInfo["state"], itemState)
-	if ok {
-		err = ecode.ItemConvertTypeErr
-		appGin.Response(nil, err)
-		return
-	}
 
-	item, err := serv.GetItemById(argGetItemById, itemId, itemState)
+	item, err := serv.GetItemById(argGetItemById, itemId, itemInfo["state"])
 	if err != nil {
 		appGin.Response(nil, err)
 		return
