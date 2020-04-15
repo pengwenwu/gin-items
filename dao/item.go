@@ -1,13 +1,31 @@
 package dao
 
 import (
+	"fmt"
 	"github.com/pkg/errors"
 
 	"gin-items/model"
 )
 
-func (dao *Dao) GetSearchItemIds(params model.ArgItemSearch, fields string, where map[string]interface{}, offset, limit int) (itemIds []int, err error) {
-	rows, err := dao.DB.Table(params.TableName()).Where(where).Offset(offset).Limit(limit).Rows()
+func (dao *Dao) GetSearchItemIds(fields string, where map[string]interface{}, whereIn model.WhereIn, like map[string]string, order, groupBy string, page, pageSize int) (itemIds []int, err error) {
+	offset := (page - 1) * pageSize
+	query := dao.DB.Debug().
+		Table(model.ItemSearches{}.TableName()).
+		Select(fields).
+		Where(where)
+	if len(whereIn.ItemId) > 0 {
+		query.Where("item_id in (?)", whereIn.ItemId)
+	}
+	//if len(like) > 0 {
+	//	for k,v := range like {
+	//		fmt.Println(k + " like ?", "%" + v +"%")
+	//		query.Where(k + " like ?", "%" + v +"%")
+	//	}
+	//}
+	name := like["sku_name"]
+	fmt.Println(11, name)
+	query.Where("sku_name LIKE ?", "伊利奶粉%")
+	rows, err := query.Offset(offset).Limit(pageSize).Rows()
 	if err != nil {
 		return
 	}
@@ -22,13 +40,25 @@ func (dao *Dao) GetSearchItemIds(params model.ArgItemSearch, fields string, wher
 	return
 }
 
-func (dao *Dao) GetSearchItemTotal(where interface{}) (int, error) {
-	var count int
-	err := dao.DB.Model(&model.ItemSearches{}).Where(where).Count(&count).Error
-	if err != nil {
-		return 0, err
+func (dao *Dao) GetSearchItemTotal(fields string, where map[string]interface{}, whereIn model.WhereIn, like map[string]string, order string) (total int, err error) {
+	query := dao.DB.Debug()
+	if len(fields) > 0 {
+		query.Select(fields)
 	}
-	return count, nil
+	query.Where(where)
+	if len(whereIn.ItemId) > 0 {
+		query.Where("item_id in (?)", whereIn.ItemId)
+	}
+	if len(like) > 0 {
+		for k,v := range like {
+			query.Where(k + " like ?", "%" + v +"%")
+		}
+	}
+	err = query.Model(&model.ItemSearches{}).Count(&total).Error
+	if err != nil {
+		return
+	}
+	return
 }
 
 func (dao *Dao) GetItem(itemId int, fields string) (item map[string]string, err error) {

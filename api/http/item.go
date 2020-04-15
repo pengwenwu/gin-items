@@ -1,11 +1,11 @@
 package http
 
 import (
-	"gin-items/library/define"
 	"github.com/gin-gonic/gin"
 	"github.com/unknwon/com"
 
 	"gin-items/library/app"
+	"gin-items/library/define"
 	"gin-items/library/setting"
 	"gin-items/model"
 )
@@ -15,10 +15,12 @@ func GetItemList(c *gin.Context) {
 	appGin := app.Gin{C: c}
 
 	argItemSearch := model.ArgItemSearch{
+		ItemState: define.ItemStateNormal,
+		SkuState: define.ItemSkuStateNormal,
 		Page:     setting.Page,
 		PageSize: setting.PageSize,
-		Order:    "item_id",
-		Desc:     "desc",
+		Order:    "item_id desc",
+		GroupBy: "item_id",
 	}
 
 	if err := c.BindJSON(&argItemSearch); err != nil {

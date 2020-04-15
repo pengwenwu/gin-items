@@ -1,28 +1,38 @@
 package service
 
 import (
-	"gin-items/library/define"
+	"fmt"
 	"github.com/astaxie/beego/validation"
 
 	"gin-items/helper"
+	"gin-items/library/define"
 	"gin-items/library/ecode"
 	"gin-items/model"
 )
 
 func (serv *Service) GetItemList(params model.ArgItemSearch) (itemList []*model.Item, total int, err error) {
-	fields := params.Fields
-	offset := (params.Page - 1) * params.PageSize
+	//fields := params.Fields
 	whereMap := params.GetWhereMap()
-	serv.dao.GetSearchItemIds(params, fields, whereMap, offset, params.PageSize)
+	like := params.Like
+	for k,v := range like {
+		if k == "name" {
+			like["sku_name"] = v
+			delete(like, k)
+		}
+	}
+	fmt.Printf("%+v", like)
+	itemIds, err := serv.dao.GetSearchItemIds("item_id", whereMap, params.WhereIn, like, params.Order, params.GroupBy, params.Page, params.PageSize)
 	if err != nil {
 		return
 	}
-	total, err = serv.dao.GetSearchItemTotal(whereMap)
+	fmt.Println(itemIds)
+	total, err = serv.dao.GetSearchItemTotal("", whereMap, params.WhereIn, like, params.Order)
+	fmt.Println(total)
 	if total <= 0 {
 		return
 	}
-
 	// 查询对应的商品详情
+
 	return
 }
 
