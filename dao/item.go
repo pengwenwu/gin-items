@@ -1,7 +1,6 @@
 package dao
 
 import (
-	"fmt"
 	"github.com/pkg/errors"
 
 	"gin-items/model"
@@ -14,17 +13,13 @@ func (dao *Dao) GetSearchItemIds(fields string, where map[string]interface{}, wh
 		Select(fields).
 		Where(where)
 	if len(whereIn.ItemId) > 0 {
-		query.Where("item_id in (?)", whereIn.ItemId)
+		query = query.Where("item_id in (?)", whereIn.ItemId)
 	}
-	//if len(like) > 0 {
-	//	for k,v := range like {
-	//		fmt.Println(k + " like ?", "%" + v +"%")
-	//		query.Where(k + " like ?", "%" + v +"%")
-	//	}
-	//}
-	name := like["sku_name"]
-	fmt.Println(11, name)
-	query.Where("sku_name LIKE ?", "伊利奶粉%")
+	if len(like) > 0 {
+		for k,v := range like {
+			query = query.Where(k + " like ?", "%" + v +"%")
+		}
+	}
 	rows, err := query.Offset(offset).Limit(pageSize).Rows()
 	if err != nil {
 		return

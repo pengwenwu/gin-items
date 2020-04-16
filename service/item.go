@@ -20,7 +20,6 @@ func (serv *Service) GetItemList(params model.ArgItemSearch) (itemList []*model.
 			delete(like, k)
 		}
 	}
-	fmt.Printf("%+v", like)
 	itemIds, err := serv.dao.GetSearchItemIds("item_id", whereMap, params.WhereIn, like, params.Order, params.GroupBy, params.Page, params.PageSize)
 	if err != nil {
 		return
