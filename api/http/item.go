@@ -29,8 +29,8 @@ func GetItemList(c *gin.Context) {
 
 	list, total, err := serv.GetItemList(argItemSearch)
 	type pageData struct {
-		Data  []*model.Item
-		Total int
+		Data  map[int]interface{} `json:"data"`
+		Total int `json:"total"`
 	}
 	data := pageData{list, total}
 	appGin.Response(data, err)

@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"github.com/astaxie/beego/validation"
 
 	"gin-items/helper"
@@ -10,8 +9,14 @@ import (
 	"gin-items/model"
 )
 
-func (serv *Service) GetItemList(params model.ArgItemSearch) (itemList []*model.Item, total int, err error) {
-	//fields := params.Fields
+func (serv *Service) GetItemList(params model.ArgItemSearch) (itemList map[int]interface{}, total int, err error) {
+	valid := validation.Validation{}
+	valid.Required(params.Fields, "fields")
+	if valid.HasErrors() {
+		err = ecode.ItemIllegalParams
+		return
+	}
+	fields := params.Fields
 	whereMap := params.GetWhereMap()
 	like := params.Like
 	for k,v := range like {
@@ -24,14 +29,20 @@ func (serv *Service) GetItemList(params model.ArgItemSearch) (itemList []*model.
 	if err != nil {
 		return
 	}
-	fmt.Println(itemIds)
-	total, err = serv.dao.GetSearchItemTotal("", whereMap, params.WhereIn, like, params.Order)
-	fmt.Println(total)
+	total, err = serv.dao.GetSearchItemTotal("count(distinct(item_id))", whereMap, params.WhereIn, like, params.Order)
 	if total <= 0 {
 		return
 	}
 	// 查询对应的商品详情
-
+	argGetItem := model.ArgGetItemById{Fields:fields}
+	itemList = make(map[int]interface{})
+	for _,itemId := range itemIds {
+		item, err  := serv.GetItemById(argGetItem, itemId, define.ItemSkuStateNormal)
+		if err != nil {
+			continue
+		}
+		itemList[itemId] = item
+	}
 	return
 }
 
@@ -40,7 +51,7 @@ func (serv *Service) GetItemById(params model.ArgGetItemById, itemId int, skuSta
 	valid.Min(itemId, 1, "item_id")
 	valid.Required(params.Fields, "fields")
 	if valid.HasErrors() {
-		err = ecode.ItemIllegalItemId
+		err = ecode.ItemIllegalParams
 		return
 	}
 	item = make(map[string]interface{})

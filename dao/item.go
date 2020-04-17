@@ -8,7 +8,7 @@ import (
 
 func (dao *Dao) GetSearchItemIds(fields string, where map[string]interface{}, whereIn model.WhereIn, like map[string]string, order, groupBy string, page, pageSize int) (itemIds []int, err error) {
 	offset := (page - 1) * pageSize
-	query := dao.DB.Debug().
+	query := dao.DB.
 		Table(model.ItemSearches{}.TableName()).
 		Select(fields).
 		Where(where)
@@ -36,17 +36,17 @@ func (dao *Dao) GetSearchItemIds(fields string, where map[string]interface{}, wh
 }
 
 func (dao *Dao) GetSearchItemTotal(fields string, where map[string]interface{}, whereIn model.WhereIn, like map[string]string, order string) (total int, err error) {
-	query := dao.DB.Debug()
+	query := dao.DB
 	if len(fields) > 0 {
-		query.Select(fields)
+		query =query.Select(fields)
 	}
-	query.Where(where)
+	query = query.Where(where)
 	if len(whereIn.ItemId) > 0 {
-		query.Where("item_id in (?)", whereIn.ItemId)
+		query = query.Where("item_id in (?)", whereIn.ItemId)
 	}
 	if len(like) > 0 {
 		for k,v := range like {
-			query.Where(k + " like ?", "%" + v +"%")
+			query = query.Where(k + " like ?", "%" + v +"%")
 		}
 	}
 	err = query.Model(&model.ItemSearches{}).Count(&total).Error
