@@ -1,30 +1,35 @@
 package app
 
 import (
-	"github.com/gin-gonic/gin"
+
+	//"encoding/json"
 	"net/http"
+
+	//"github.com/astaxie/beego/validation"
+	"github.com/gin-gonic/gin"
 
 	"gin-items/library/ecode"
 )
 
 type Gin struct {
 	C *gin.Context
-	Error error
 }
 
 type Response struct {
-	Code int         `json:"code"`
+	State int         `json:"state"`
 	Msg  string      `json:"msg"`
 	Data interface{} `json:"data"`
 }
 
 func (g *Gin) Response(data interface{}, err error) {
 	code := http.StatusOK
-	g.Error = err
 	bcode := ecode.Cause(err)
+	state := bcode.Code()
+	msg := bcode.Message()
+
 	g.C.JSON(code, Response{
-		Code: bcode.Code(),
-		Msg:  bcode.Message(),
+		State: state,
+		Msg: msg,
 		Data: data,
 	})
 	return

@@ -1,15 +1,10 @@
 package http
 
 import (
-	//"gin-items/middleware/jwt"
-	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
-	"net/http"
-
 	"gin-items/library/setting"
 	"gin-items/service"
-	"gin-items/model"
-	"gin-items/library/ecode"
+	//"gin-items/middleware/jwt"
+	"github.com/gin-gonic/gin"
 )
 
 
@@ -40,6 +35,8 @@ func InitRouter() *gin.Engine {
 		itemGroup.GET("/item", GetItemList)
 		// 获取单个item
 		itemGroup.GET("/item/:item_id", GetItemById)
+		// 新增单个item
+		itemGroup.POST("/item", AddItem)
 	}
 
 	return r
@@ -47,19 +44,4 @@ func InitRouter() *gin.Engine {
 
 func initService()  {
 	serv = service.New()
-}
-
-func bind(c *gin.Context, v model.ParamValidator) (err error) {
-	if err = c.Bind(&v); err != nil {
-		err = errors.WithStack(err)
-		return
-	}
-	if !v.Validate() {
-		err = ecode.RequestErr
-		c.JSON(http.StatusBadRequest, gin.H{
-			"code": ecode.InvalidParams,
-		})
-		return
-	}
-	return
 }

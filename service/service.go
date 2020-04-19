@@ -1,6 +1,8 @@
 package service
 
-import "gin-items/dao"
+import (
+	"gin-items/dao"
+)
 
 type Service struct {
 	dao  *dao.Dao

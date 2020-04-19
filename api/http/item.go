@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/unknwon/com"
 
+	"gin-items/helper"
 	"gin-items/library/app"
 	"gin-items/library/define"
 	"gin-items/library/setting"
@@ -23,7 +24,9 @@ func GetItemList(c *gin.Context) {
 		GroupBy: "item_id",
 	}
 
-	if err := c.BindJSON(&argItemSearch); err != nil {
+	if bindErr := c.BindJSON(&argItemSearch); bindErr != nil {
+		err := helper.GetEcodeBindJson(bindErr)
+		appGin.Response(nil, err)
 		return
 	}
 
@@ -42,7 +45,8 @@ func GetItemById(c *gin.Context) {
 
 	itemId := com.StrTo(c.Param("item_id")).MustInt()
 	argGetItemById := model.ArgGetItemById{}
-	if err := c.BindJSON(&argGetItemById);err != nil{
+	if bindErr := c.BindJSON(&argGetItemById);bindErr != nil{
+		err := helper.GetEcodeBindJson(bindErr)
 		appGin.Response(nil, err)
 		return
 	}
@@ -58,4 +62,8 @@ func GetItemById(c *gin.Context) {
 
 	appGin.Response(item, nil)
 	return
+}
+
+func AddItem(c *gin.Context)  {
+
 }

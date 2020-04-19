@@ -1,18 +1,25 @@
 package ecode
 
-var MsgMaps = map[int]string{
-	Success:              "ok",
-	Error:                "fail",
-	InvalidParams:        "请求参数错误",
-	UnsupportedMediaType: "错误的请求格式",
-	ErrorGetItemListFail: "获取商品item列表失败",
-	ErrorGetItemFail:     "获取商品item失败",
+var MsgMaps = GetAllMsgMaps(
+	CommonMsgMaps,
+	ItemMsgMaps,
+)
+
+func GetAllMsgMaps(msgMaps ...map[Code]string) (allMsgMaps map[Code]string) {
+	allMsgMaps = make(map[Code]string)
+	for _, msgMap := range msgMaps {
+		for k, v := range msgMap {
+			allMsgMaps[k] = v
+		}
+	}
+	return
 }
 
 func GetMsg(code int) string {
-	msg, ok := MsgMaps[code]
+	var intToCode = Int(code)
+	msg, ok := MsgMaps[intToCode]
 	if ok {
 		return msg
 	}
-	return MsgMaps[Error]
+	return ""
 }

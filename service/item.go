@@ -5,7 +5,6 @@ import (
 
 	"gin-items/helper"
 	"gin-items/library/define"
-	"gin-items/library/ecode"
 	"gin-items/model"
 )
 
@@ -13,7 +12,7 @@ func (serv *Service) GetItemList(params model.ArgItemSearch) (itemList map[int]i
 	valid := validation.Validation{}
 	valid.Required(params.Fields, "fields")
 	if valid.HasErrors() {
-		err = ecode.ItemIllegalParams
+		err = helper.GetEcodeValidParam(valid.Errors)
 		return
 	}
 	fields := params.Fields
@@ -51,7 +50,7 @@ func (serv *Service) GetItemById(params model.ArgGetItemById, itemId int, skuSta
 	valid.Min(itemId, 1, "item_id")
 	valid.Required(params.Fields, "fields")
 	if valid.HasErrors() {
-		err = ecode.ItemIllegalParams
+		err = helper.GetEcodeValidParam(valid.Errors)
 		return
 	}
 	item = make(map[string]interface{})

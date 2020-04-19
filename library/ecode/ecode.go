@@ -62,11 +62,17 @@ func (e Code) Error() string {
 func (e Code) Code() int { return int(e) }
 
 // Message return error message
+// v0.0.1 date: 2020-04-20 author: pww tip: 升级增加语言包获取GetMsg
 func (e Code) Message() string {
 	if cm, ok := _messages.Load().(map[int]string); ok {
 		if msg, ok := cm[e.Code()]; ok {
 			return msg
 		}
+	}
+	// 自定义语言包获取
+	msg := GetMsg(e.Code())
+	if msg != "" {
+		return msg
 	}
 	return e.Error()
 }

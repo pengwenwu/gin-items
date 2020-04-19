@@ -4,6 +4,6 @@ package ecode
 // item ecode interval is [1000, 1999]
 
 var (
-	ItemIllegalParams = New(1000) // 参数非法
-	ItemConvertTypeErr = New(1001) // item转换数据类型失败
+	ItemConvertTypeErr = New(1000) // item转换数据类型失败
+	ItemCannotFind = New(1001) // 未查询到商品
 )
