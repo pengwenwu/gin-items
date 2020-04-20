@@ -2,18 +2,19 @@ package setting
 
 import (
 	"fmt"
-	"github.com/BurntSushi/toml"
 	"log"
 	"path/filepath"
 	"sync"
-	"time"
+
+	"github.com/BurntSushi/toml"
 )
 
-type AppConfig struct {
+type appConfig struct {
 	RunMode string `toml:"run_mode"`
 	APP     appInfo
 	Server  serverInfo
 	DB      database `toml:"database"`
+	Log		logInfo
 }
 
 type appInfo struct {
@@ -37,30 +38,22 @@ type database struct {
 	TablePrefix string `toml:"table_prefix"`
 }
 
+type logInfo struct {
+	LogFilePath string `toml:"log_file_path"`
+	LogFileName string `toml:"log_file_name"`
+}
+
 var (
-	cfg  *AppConfig
+	cfg  *appConfig
 	once sync.Once
-
-	RunMode string
-
-	HTTPPort     int
-	ReadTimeout  time.Duration
-	WriteTimeout time.Duration
-
-	Page      int
-	PageSize  int
-	JwtSecret string
 )
 
 func init() {
-	LoadBase()
-	LoadServer()
-	LoadApp()
 }
 
 // 单例模式
 // todo: 动态更新
-func Config() *AppConfig {
+func Config() *appConfig {
 	once.Do(func() {
 		filePath, err := filepath.Abs("conf/app.toml")
 		if err != nil {
@@ -74,20 +67,4 @@ func Config() *AppConfig {
 		}
 	})
 	return cfg
-}
-
-func LoadBase() {
-	RunMode = Config().RunMode
-}
-
-func LoadServer() {
-	HTTPPort = Config().Server.HttpPort
-	ReadTimeout = time.Duration(Config().Server.ReadTimeout) * time.Second
-	WriteTimeout = time.Duration(Config().Server.WriteTimeout) * time.Second
-}
-
-func LoadApp() {
-	Page = Config().APP.Page
-	PageSize = Config().APP.PageSize
-	JwtSecret = Config().APP.JwtSecret
 }

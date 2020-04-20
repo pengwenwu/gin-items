@@ -1,12 +1,12 @@
 package http
 
 import (
-	"gin-items/library/setting"
-	"gin-items/service"
-	//"gin-items/middleware/jwt"
 	"github.com/gin-gonic/gin"
-)
 
+	"gin-items/library/setting"
+	"gin-items/middleware/log"
+	"gin-items/service"
+)
 
 var (
 	serv *service.Service
@@ -16,9 +16,12 @@ func InitRouter() *gin.Engine {
 	initService()
 
 	r := gin.New()
-	r.Use(gin.Logger())
-	r.Use(gin.Recovery())
-	gin.SetMode(setting.RunMode)
+	r.Use(
+		gin.Logger(), // Logger:控制台输出（线上环境可取消）
+		gin.Recovery(), // panic异常500处理
+		log.LoggerToFile(), // logrus日志
+	)
+	gin.SetMode(setting.Config().RunMode)
 
 	r.GET("/test", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -42,6 +45,6 @@ func InitRouter() *gin.Engine {
 	return r
 }
 
-func initService()  {
+func initService() {
 	serv = service.New()
 }

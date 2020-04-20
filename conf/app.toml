@@ -20,3 +20,7 @@ run_mode = "debug"
 #    password = "fuyuan1906"
     name = "service_items"
     table_prefix = ""
+
+[log]
+    log_file_path = "/Users/pengwenwu/my_go/src/gin-items/logs"
+    log_file_name = "access.log"

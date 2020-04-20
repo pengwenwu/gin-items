@@ -18,8 +18,8 @@ func GetItemList(c *gin.Context) {
 	argItemSearch := model.ArgItemSearch{
 		ItemState: define.ItemStateNormal,
 		SkuState: define.ItemSkuStateNormal,
-		Page:     setting.Page,
-		PageSize: setting.PageSize,
+		Page:     setting.Config().APP.Page,
+		PageSize: setting.Config().APP.PageSize,
 		Order:    "item_id desc",
 		GroupBy: "item_id",
 	}
