@@ -56,6 +56,7 @@ func GetEcodeValidParam(validErrors []*validation.Error) (err error) {
 	return
 }
 
+// 绑定json错误
 func GetEcodeBindJson(bindErr error) (err error) {
 	if bindErr == nil {
 		return
