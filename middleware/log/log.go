@@ -55,8 +55,6 @@ func LoggerToFile() gin.HandlerFunc {
 	})
 	// 新增 Hook
 	logger.AddHook(lfHook)
-	////设置日志格式
-	//logger.SetFormatter(&logrus.TextFormatter{})
 	return func(c *gin.Context) {
 		// 开始时间
 		startTime := time.Now()
