@@ -2,9 +2,12 @@ package ecode
 
 // All common ecode
 var (
-	OK            = add(1)  // 正确
+	OK = add(1) // 正确
 
-	IllegalParams = add(-1) // 参数非法
+	NoAuthorization  = add(-101) // 未获取到token
+	AuthorizationErr = add(-102) // token非法
+
+	IllegalParams    = add(-201) // 参数非法
 
 	RequestErr = add(-400) // 请求错误
 	ServerErr  = add(-500) // 服务器错误

@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"gin-items/library/setting"
+	"gin-items/middleware/jwt"
 	"gin-items/middleware/log"
 	"gin-items/service"
 )
@@ -32,7 +33,7 @@ func InitRouter() *gin.Engine {
 	//r.GET("/auth", api.GetAuth)
 
 	itemGroup := r.Group("")
-	//apiv1.Use(jwt.Jwt())
+	itemGroup.Use(jwt.Jwt())
 	{
 		// 获取item列表
 		itemGroup.GET("/item", GetItemList)
