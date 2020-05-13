@@ -27,7 +27,7 @@ type DecodeResult struct {
 	Data interface{} `json:"data"`
 }
 
-func (t *token) NewToken() *token {
+func NewToken() *token {
 	return &token{
 		expire: 604800,
 		before:3600,
@@ -74,4 +74,42 @@ func (t *token) Encode(appKey string, channel int, secret string, extra map[stri
 	result.Token = tokenString
 
 	return result
+}
+
+func (t *token) Decode(token ,secret string) (result DecodeResult) {
+	if len(token) == 0 {
+		result.State = 2001
+		result.Msg = "token错误，非空字符串"
+		return
+	}
+	if len(secret) == 0 {
+		result.State = 2002
+		result.Msg = "secret错误，非空字符串"
+		return
+	}
+	data, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+		return []byte(secret), nil
+	})
+	if data.Valid {
+		result.State = 1
+		result.Msg = "解码成功"
+		result.Data = data
+	} else if ve, ok := err.(*jwt.ValidationError); ok {
+		if ve.Errors&jwt.ValidationErrorMalformed != 0 {
+			result.State = 3001
+			result.Msg = "token非法"
+		} else if ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
+			result.State = 3002
+			result.Msg = "token尚未生效或者已过期"
+		} else {
+			result.State = 3003
+			result.Msg = "token解析失败"
+		}
+	} else {
+		result.State = 3003
+		result.Msg = "token解析失败"
+	}
+	return
+
+	return
 }
