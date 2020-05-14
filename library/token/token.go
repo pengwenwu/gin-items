@@ -24,7 +24,7 @@ type EncodeResult struct {
 
 type DecodeResult struct {
 	Result
-	Data interface{} `json:"data"`
+	Data map[string]interface{} `json:"data"`
 }
 
 func NewToken() *token {
@@ -91,9 +91,16 @@ func (t *token) Decode(token ,secret string) (result DecodeResult) {
 		return []byte(secret), nil
 	})
 	if data.Valid {
+		claims, ok := data.Claims.(*jwt.StandardClaims)
+		if !ok {
+			result.State = 3003
+			result.Msg = "token解析失败"
+		} else {
+
+		}
 		result.State = 1
 		result.Msg = "解码成功"
-		result.Data = data
+		result.Data = claims
 	} else if ve, ok := err.(*jwt.ValidationError); ok {
 		if ve.Errors&jwt.ValidationErrorMalformed != 0 {
 			result.State = 3001
@@ -109,7 +116,5 @@ func (t *token) Decode(token ,secret string) (result DecodeResult) {
 		result.State = 3003
 		result.Msg = "token解析失败"
 	}
-	return
-
 	return
 }
