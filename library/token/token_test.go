@@ -144,11 +144,15 @@ func Test_token_Decode(t1 *testing.T) {
 				expire int64
 				before int64
 			}{
+				expire: 3600,
+				before: 60,
 			},
 			args: struct {
 				token  string
 				secret string
 			}{
+				token: "",
+				secret: "45f25874aa6dd33427dee744f2a800e6",
 			},
 			wantResult: DecodeResult{
 				Result:         Result{
@@ -178,26 +182,76 @@ func Test_token_Decode(t1 *testing.T) {
 				},
 			},
 		},
+		{
+			name: "decode fail for expired",
+			fields: struct {
+				expire int64
+				before int64
+			}{
+				expire: -604800,
+				before: 1,
+			},
+			args: struct {
+				token  string
+				secret string
+			}{
+				token: "",
+				secret: "45f25874aa6dd33427dee744f2a800e6",
+			},
+			wantResult: DecodeResult{
+				Result:         Result{
+					State: 3002,
+					Msg:   "",
+				},
+				MyCustomClaims: &MyCustomClaims{
+					AppKey:          "900ffe093ae07a09a99525baac3cfe53",
+					Channel:         0,
+					EncodeExtraData: EncodeExtraData{
+						LoginUserId: 1535917,
+						NickName:    "四个二带俩王",
+						BabyInfo:    []map[string]interface{}{
+							{
+								"name": "张三",
+								"gender": "男",
+								"age": 1,
+							},
+							{
+								"name": "李四",
+								"gender": "女",
+								"age": 1.5,
+							},
+						},
+					},
+					StandardClaims:  jwt.StandardClaims{},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
-			secret := "45f25874aa6dd33427dee744f2a800e6"
 			appKey := "900ffe093ae07a09a99525baac3cfe53"
+			secret := "45f25874aa6dd33427dee744f2a800e6"
 
 			t := NewToken()
-			t.SetExpire(3600)
-			t.SetBefore(3600)
+			t.SetExpire(tt.fields.expire)
+			t.SetBefore(tt.fields.before)
 			encodeResult := t.Encode(appKey, 0, secret, tt.wantResult.EncodeExtraData)
-			decodeResult := t.Decode(encodeResult.Token, secret)
+			decodeResult := t.Decode(encodeResult.Token, tt.args.secret)
 
 			if decodeResult.State != tt.wantResult.State {
 				t1.Errorf("Decode() = %v, want %v", decodeResult.State, tt.wantResult.State)
+				return
+			}
+			if decodeResult.MyCustomClaims == nil {
+				return
 			}
 			if decodeResult.AppKey != tt.wantResult.AppKey {
 				t1.Errorf("Decode() = %v, want %v", decodeResult.AppKey, tt.wantResult.AppKey)
+				return
 			}
 			if decodeResult.Channel != tt.wantResult.Channel {
 				t1.Errorf("Decode() = %v, want %v", decodeResult.Channel, tt.wantResult.Channel)
+				return
 			}
 		})
 	}
