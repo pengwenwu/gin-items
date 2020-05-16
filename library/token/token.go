@@ -22,10 +22,24 @@ type EncodeResult struct {
 	Token string `json:"token"`
 }
 
+type MyCustomClaims struct {
+	AppKey string `json:"appkey"`
+	Channel int `json:"channel"`
+	EncodeExtraData
+	jwt.StandardClaims
+}
+
+type EncodeExtraData struct {
+	LoginUserId int `json:"login_user_id"`
+	NickName string `json:"nick_name"`
+	BabyInfo []map[string]interface{} `json:"baby_info"`
+}
+
 type DecodeResult struct {
 	Result
-	Data map[string]interface{} `json:"data"`
+	*MyCustomClaims
 }
+
 
 func NewToken() *token {
 	return &token{
@@ -42,7 +56,7 @@ func (t *token) SetBefore(before int64) {
 	t.before = before
 }
 
-func (t *token) Encode(appKey string, channel int, secret string, extra map[string]interface{}) (result EncodeResult) {
+func (t *token) Encode(appKey string, channel int, secret string, extra EncodeExtraData) (result EncodeResult) {
 	if len(appKey) < 32 {
 		result.State = 2001
 		result.Msg = "appkey是32位字符串，请传入正确的值"
@@ -53,16 +67,22 @@ func (t *token) Encode(appKey string, channel int, secret string, extra map[stri
 		result.Msg = "请输入正确的secret"
 		return
 	}
-	token := jwt.New(jwt.SigningMethodHS256)
-	claims := make(jwt.MapClaims)
-	claims["appkey"] = appKey
-	claims["channel"] = channel
-	claims["exp"] = time.Now().Unix() + t.expire
-	claims["nbf"] = time.Now().Unix() - t.before
-	for k, v := range extra {
-		claims[k] = v
+	now := time.Now().Unix()
+	claims := MyCustomClaims{
+		AppKey:          appKey,
+		Channel:         channel,
+		EncodeExtraData: extra,
+		StandardClaims:  jwt.StandardClaims{
+			IssuedAt:  now,
+			ExpiresAt: now + t.expire,
+			NotBefore: now - t.before,
+			Issuer:    "api",
+			Subject:   "jwt",
+			Audience:  "common",
+			Id:        "",
+		},
 	}
-	token.Claims = claims
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString([]byte(secret))
 	if err != nil {
 		result.State = 3001
@@ -76,8 +96,8 @@ func (t *token) Encode(appKey string, channel int, secret string, extra map[stri
 	return result
 }
 
-func (t *token) Decode(token ,secret string) (result DecodeResult) {
-	if len(token) == 0 {
+func (t *token) Decode(tokenString ,secret string) (result DecodeResult) {
+	if len(tokenString) == 0 {
 		result.State = 2001
 		result.Msg = "token错误，非空字符串"
 		return
@@ -87,11 +107,11 @@ func (t *token) Decode(token ,secret string) (result DecodeResult) {
 		result.Msg = "secret错误，非空字符串"
 		return
 	}
-	data, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+	token , err := jwt.ParseWithClaims(tokenString, &MyCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secret), nil
 	})
-	if data.Valid {
-		claims, ok := data.Claims.(*jwt.StandardClaims)
+	if token.Valid {
+		claims, ok := token.Claims.(*MyCustomClaims)
 		if !ok {
 			result.State = 3003
 			result.Msg = "token解析失败"
@@ -100,7 +120,7 @@ func (t *token) Decode(token ,secret string) (result DecodeResult) {
 		}
 		result.State = 1
 		result.Msg = "解码成功"
-		result.Data = claims
+		result.MyCustomClaims = claims
 	} else if ve, ok := err.(*jwt.ValidationError); ok {
 		if ve.Errors&jwt.ValidationErrorMalformed != 0 {
 			result.State = 3001

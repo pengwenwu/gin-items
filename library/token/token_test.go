@@ -1,7 +1,7 @@
 package token
 
 import (
-	"reflect"
+	"github.com/dgrijalva/jwt-go"
 	"testing"
 )
 
@@ -14,7 +14,7 @@ func Test_token_Encode(t1 *testing.T) {
 		appKey  string
 		channel int
 		secret  string
-		extra   map[string]interface{}
+		extra   EncodeExtraData
 	}
 	tests := []struct {
 		name       string
@@ -35,14 +35,26 @@ func Test_token_Encode(t1 *testing.T) {
 				appKey  string
 				channel int
 				secret  string
-				extra   map[string]interface{}
+				extra EncodeExtraData
 			}{
 				appKey:  "900ffe093ae07a09a99525baac3cfe53",
 				channel: 0,
 				secret:  "45f25874aa6dd33427dee744f2a800e6",
-				extra: map[string]interface{}{
-					"login_user_id": 1535917,
-					"nickname":      "暗夜御林",
+				extra:EncodeExtraData{
+					LoginUserId: 1535917,
+					NickName:    "四个二带俩王",
+					BabyInfo:    []map[string]interface{}{
+						{
+							"name": "张三",
+							"gender": "男",
+							"age": 1,
+						},
+						{
+							"name": "李四",
+							"gender": "女",
+							"age": 1.5,
+						},
+					},
 				},
 			},
 			wantResult: EncodeResult{
@@ -66,14 +78,26 @@ func Test_token_Encode(t1 *testing.T) {
 				appKey  string
 				channel int
 				secret  string
-				extra   map[string]interface{}
+				extra   EncodeExtraData
 			}{
 				appKey:  "900ffe093ae07a09a99525baac3cfe53",
 				channel: 0,
 				secret:  "",
-				extra: map[string]interface{}{
-					"login_user_id": 1535917,
-					"nickname":      "暗夜御林",
+				extra:EncodeExtraData{
+					LoginUserId: 1535917,
+					NickName:    "四个二带俩王",
+					BabyInfo:    []map[string]interface{}{
+						{
+							"name": "张三",
+							"gender": "男",
+							"age": 1,
+						},
+						{
+							"name": "李四",
+							"gender": "女",
+							"age": 1.5,
+						},
+					},
 				},
 			},
 			wantResult: EncodeResult{
@@ -127,25 +151,30 @@ func Test_token_Decode(t1 *testing.T) {
 			}{
 			},
 			wantResult: DecodeResult{
-				Result: Result{
+				Result:         Result{
 					State: 1,
-					Msg:   "ok",
+					Msg:   "",
 				},
-				Data: map[string]interface{}{
-					"login_user_id": 1535917,
-					"nickname": "四个二带俩王",
-					"baby_info": []map[string]interface{}{
-						{
-							"realname": "张三",
-							"gender": "男",
-							"age": 1,
-						},
-						{
-							"realname": "李四",
-							"gender": "女",
-							"age": 2,
+				MyCustomClaims: &MyCustomClaims{
+					AppKey:          "900ffe093ae07a09a99525baac3cfe53",
+					Channel:         0,
+					EncodeExtraData: EncodeExtraData{
+						LoginUserId: 1535917,
+						NickName:    "四个二带俩王",
+						BabyInfo:    []map[string]interface{}{
+							{
+								"name": "张三",
+								"gender": "男",
+								"age": 1,
+							},
+							{
+								"name": "李四",
+								"gender": "女",
+								"age": 1.5,
+							},
 						},
 					},
+					StandardClaims:  jwt.StandardClaims{},
 				},
 			},
 		},
@@ -158,19 +187,17 @@ func Test_token_Decode(t1 *testing.T) {
 			t := NewToken()
 			t.SetExpire(3600)
 			t.SetBefore(3600)
-			encodeResult := t.Encode(appKey, 0, secret, tt.wantResult.Data)
+			encodeResult := t.Encode(appKey, 0, secret, tt.wantResult.EncodeExtraData)
 			decodeResult := t.Decode(encodeResult.Token, secret)
-			t1.Logf("%+v %+v", encodeResult, decodeResult)
 
-			if decodeResult.State != tt.wantResult.State ||
-				!reflect.DeepEqual(decodeResult.Data, tt.wantResult.Data) {
-				t1.Errorf("Decode() = %v, want %v", decodeResult, tt.wantResult)
+			if decodeResult.State != tt.wantResult.State {
+				t1.Errorf("Decode() = %v, want %v", decodeResult.State, tt.wantResult.State)
 			}
-			for k,v := range tt.wantResult.Data {
-				decodeVal, ok := decodeResult.Data[k]
-				if !ok || decodeVal != v {
-					t1.Errorf("Decode data = %v, want data %v", decodeVal, v)
-				}
+			if decodeResult.AppKey != tt.wantResult.AppKey {
+				t1.Errorf("Decode() = %v, want %v", decodeResult.AppKey, tt.wantResult.AppKey)
+			}
+			if decodeResult.Channel != tt.wantResult.Channel {
+				t1.Errorf("Decode() = %v, want %v", decodeResult.Channel, tt.wantResult.Channel)
 			}
 		})
 	}
