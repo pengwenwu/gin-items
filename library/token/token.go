@@ -1,11 +1,13 @@
 package token
 
 import (
-	"github.com/dgrijalva/jwt-go"
+	"encoding/base64"
+	"encoding/json"
+	"strings"
 	"time"
-)
 
-const alg  = "HS256" // 签名算法
+	"github.com/dgrijalva/jwt-go"
+)
 
 type token struct {
 	expire int64 // 生成后，多少秒内有效
@@ -136,5 +138,29 @@ func (t *token) Decode(tokenString ,secret string) (result DecodeResult) {
 		result.State = 3003
 		result.Msg = "token解析失败"
 	}
+	return
+}
+
+// 只有在网关后，获取得到已验证过的token，将其值返回回来，不允许在网关前使用
+func (t *token) UnSafeDecode(tokenString string) (result DecodeResult) {
+	splitArr := strings.Split(tokenString, ".")
+	if len(splitArr) != 3 {
+		result.State = 2001
+		result.Msg = "token由3个.号分割，格式不对"
+		return
+	}
+	payloadStr, err := base64.RawStdEncoding.DecodeString(splitArr[1])
+	if err != nil {
+		result.State = 2002
+		result.Msg = "token payload解析失败"
+		return
+	}
+	if err := json.Unmarshal(payloadStr, &result.MyCustomClaims); err != nil {
+		result.State = 2003
+		result.Msg = "token不符合jwt规范，非法token"
+		return
+	}
+	result.State = 1
+	result.Msg = "解压成功，数据未经安全校验，请谨慎使用"
 	return
 }
