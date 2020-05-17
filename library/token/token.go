@@ -1,7 +1,6 @@
 package token
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"strings"
 	"time"
@@ -149,7 +148,7 @@ func UnSafeDecode(tokenString string) (result DecodeResult) {
 		result.Msg = "token由3个.号分割，格式不对"
 		return
 	}
-	payloadStr, err := base64.RawStdEncoding.DecodeString(splitArr[1])
+	payloadStr, err := jwt.DecodeSegment(splitArr[1])
 	if err != nil {
 		result.State = 2002
 		result.Msg = "token payload解析失败"

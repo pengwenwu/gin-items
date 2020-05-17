@@ -449,7 +449,7 @@ func Test_token_UnSafeDecode(t1 *testing.T) {
 			name:   "fail: error payload",
 			fields: fields{},
 			args: args{
-				tokenString: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwidXNlcm5hbWUiOiJKb2huIERvZSIsImlhdCI6MTUxNjIzOTAyMiwiYXBwa2V5IjoiNWUyZjJjMzU2NTM4OTMyOWMxMjQ3ZWZkMDQzZjNiZTAuaW9zIn0=.tOfZmMANQKth6oFVJqUT_LtMAxBmUr1BkFuhBmNS1E8",
+				tokenString: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.SGVsbG8gd29ybGQuIOS9oOWlve+8jOS4lueVjO+8gQ.tOfZmMANQKth6oFVJqUT_LtMAxBmUr1BkFuhBmNS1E8",
 			},
 			wantResult: DecodeResult{
 				Result: Result{
