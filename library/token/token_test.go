@@ -382,7 +382,7 @@ func Test_token_Decode(t1 *testing.T) {
 			} else {
 				tokenString = tt.args.tokenString
 			}
-			decodeResult := t.Decode(tokenString, tt.args.secret)
+			decodeResult := Decode(tokenString, tt.args.secret)
 
 			if decodeResult.State != tt.wantResult.State {
 				t1.Errorf("Decode() = %v, want %v", decodeResult.State, tt.wantResult.State)
@@ -476,11 +476,7 @@ func Test_token_UnSafeDecode(t1 *testing.T) {
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
-			t := &token{
-				expire: tt.fields.expire,
-				before: tt.fields.before,
-			}
-			gotResult := t.UnSafeDecode(tt.args.tokenString)
+			gotResult := UnSafeDecode(tt.args.tokenString)
 			if gotResult.State != tt.wantResult.State {
 				t1.Errorf("UnSafeDecode() = %v, want %v", gotResult.State, tt.wantResult.State)
 				return

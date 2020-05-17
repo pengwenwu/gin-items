@@ -98,7 +98,7 @@ func (t *token) Encode(appKey string, channel int, secret string, extra EncodeEx
 	return result
 }
 
-func (t *token) Decode(tokenString ,secret string) (result DecodeResult) {
+func Decode(tokenString ,secret string) (result DecodeResult) {
 	if len(tokenString) == 0 {
 		result.State = 2001
 		result.Msg = "token错误，非空字符串"
@@ -142,7 +142,7 @@ func (t *token) Decode(tokenString ,secret string) (result DecodeResult) {
 }
 
 // 只有在网关后，获取得到已验证过的token，将其值返回回来，不允许在网关前使用
-func (t *token) UnSafeDecode(tokenString string) (result DecodeResult) {
+func UnSafeDecode(tokenString string) (result DecodeResult) {
 	splitArr := strings.Split(tokenString, ".")
 	if len(splitArr) != 3 {
 		result.State = 2001
