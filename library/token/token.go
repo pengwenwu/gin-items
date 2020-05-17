@@ -39,7 +39,7 @@ type EncodeExtraData struct {
 
 type DecodeResult struct {
 	Result
-	*MyCustomClaims
+	Data *MyCustomClaims `json:"data"`
 }
 
 
@@ -122,7 +122,7 @@ func (t *token) Decode(tokenString ,secret string) (result DecodeResult) {
 		}
 		result.State = 1
 		result.Msg = "解码成功"
-		result.MyCustomClaims = claims
+		result.Data = claims
 	} else if ve, ok := err.(*jwt.ValidationError); ok {
 		if ve.Errors&jwt.ValidationErrorMalformed != 0 {
 			result.State = 3001
@@ -155,7 +155,7 @@ func (t *token) UnSafeDecode(tokenString string) (result DecodeResult) {
 		result.Msg = "token payload解析失败"
 		return
 	}
-	if err := json.Unmarshal(payloadStr, &result.MyCustomClaims); err != nil {
+	if err := json.Unmarshal(payloadStr, &result.Data); err != nil {
 		result.State = 2003
 		result.Msg = "token不符合jwt规范，非法token"
 		return

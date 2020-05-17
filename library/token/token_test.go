@@ -202,7 +202,7 @@ func Test_token_Decode(t1 *testing.T) {
 					State: 1,
 					Msg:   "",
 				},
-				MyCustomClaims: &MyCustomClaims{
+				Data: &MyCustomClaims{
 					AppKey:  "900ffe093ae07a09a99525baac3cfe53",
 					Channel: 0,
 					EncodeExtraData: EncodeExtraData{
@@ -246,7 +246,7 @@ func Test_token_Decode(t1 *testing.T) {
 					State: 2001,
 					Msg:   "",
 				},
-				MyCustomClaims: nil,
+				Data: nil,
 			},
 		},
 		{
@@ -270,7 +270,7 @@ func Test_token_Decode(t1 *testing.T) {
 					State: 2002,
 					Msg:   "",
 				},
-				MyCustomClaims: nil,
+				Data: nil,
 			},
 		},
 		{
@@ -294,7 +294,7 @@ func Test_token_Decode(t1 *testing.T) {
 					State: 3001,
 					Msg:   "",
 				},
-				MyCustomClaims: &MyCustomClaims{
+				Data: &MyCustomClaims{
 					AppKey:  "900ffe093ae07a09a99525baac3cfe53",
 					Channel: 0,
 					EncodeExtraData: EncodeExtraData{
@@ -338,7 +338,7 @@ func Test_token_Decode(t1 *testing.T) {
 					State: 3002,
 					Msg:   "",
 				},
-				MyCustomClaims: nil,
+				Data: nil,
 			},
 		},
 
@@ -363,7 +363,7 @@ func Test_token_Decode(t1 *testing.T) {
 					State: 3003,
 					Msg:   "",
 				},
-				MyCustomClaims: nil,
+				Data: nil,
 			},
 		},
 	}
@@ -377,7 +377,7 @@ func Test_token_Decode(t1 *testing.T) {
 			if tt.name == "success" {
 				t.SetExpire(tt.fields.expire)
 				t.SetBefore(tt.fields.before)
-				encodeResult := t.Encode(appKey, 0, secret, tt.wantResult.EncodeExtraData)
+				encodeResult := t.Encode(appKey, 0, secret, tt.wantResult.Data.EncodeExtraData)
 				tokenString = encodeResult.Token
 			} else {
 				tokenString = tt.args.tokenString
@@ -388,20 +388,15 @@ func Test_token_Decode(t1 *testing.T) {
 				t1.Errorf("Decode() = %v, want %v", decodeResult.State, tt.wantResult.State)
 				return
 			}
-			if decodeResult.MyCustomClaims == nil {
+			if decodeResult.Data == nil {
 				return
 			}
-			t1.Log(tt.name,
-				decodeResult.IssuedAt,
-				decodeResult.ExpiresAt,
-				decodeResult.NotBefore,
-			)
-			if decodeResult.AppKey != tt.wantResult.AppKey {
-				t1.Errorf("Decode() = %v, want %v", decodeResult.AppKey, tt.wantResult.AppKey)
+			if decodeResult.Data.AppKey != tt.wantResult.Data.AppKey {
+				t1.Errorf("Decode() = %v, want %v", decodeResult.Data.AppKey, tt.wantResult.Data.AppKey)
 				return
 			}
-			if decodeResult.Channel != tt.wantResult.Channel {
-				t1.Errorf("Decode() = %v, want %v", decodeResult.Channel, tt.wantResult.Channel)
+			if decodeResult.Data.Channel != tt.wantResult.Data.Channel {
+				t1.Errorf("Decode() = %v, want %v", decodeResult.Data.Channel, tt.wantResult.Data.Channel)
 				return
 			}
 		})
@@ -433,7 +428,7 @@ func Test_token_UnSafeDecode(t1 *testing.T) {
 					State: 1,
 					Msg:   "",
 				},
-				MyCustomClaims: nil,
+				Data: nil,
 			},
 		},
 		{
@@ -447,7 +442,7 @@ func Test_token_UnSafeDecode(t1 *testing.T) {
 					State: 2001,
 					Msg:   "",
 				},
-				MyCustomClaims: nil,
+				Data: nil,
 			},
 		},
 		{
@@ -461,7 +456,7 @@ func Test_token_UnSafeDecode(t1 *testing.T) {
 					State: 2002,
 					Msg:   "",
 				},
-				MyCustomClaims: nil,
+				Data: nil,
 			},
 		},
 		{
@@ -475,7 +470,7 @@ func Test_token_UnSafeDecode(t1 *testing.T) {
 					State: 2003,
 					Msg:   "",
 				},
-				MyCustomClaims: nil,
+				Data: nil,
 			},
 		},
 	}
