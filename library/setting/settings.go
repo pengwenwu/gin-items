@@ -13,14 +13,13 @@ type appConfig struct {
 	RunMode string `toml:"run_mode"`
 	APP     appInfo
 	Server  serverInfo
-	DB      database `toml:"database"`
+	DB      multiDB `toml:"database"`
 	Log		logInfo
 }
 
 type appInfo struct {
 	Page      int    `toml:"page"`
 	PageSize  int    `toml:"page_size"`
-	JwtSecret string `toml:"jwt_secret"`
 }
 
 type serverInfo struct {
@@ -29,13 +28,30 @@ type serverInfo struct {
 	WriteTimeout int `toml:"write_timeout"`
 }
 
-type database struct {
+type multiDB struct {
+	Master multiMasterDB `toml:"master"`
+	Slave multiSlaveDB `toml:"slave"`
+}
+
+type multiMasterDB struct {
+	ServiceItems *Database `toml:"service_items"`
+	//ShopTrades *Database `toml:"shop_trades"`
+}
+
+type multiSlaveDB struct {
+	ServiceItems *Database `toml:"service_items"`
+}
+
+type Database struct {
 	Type        string
 	User        string
 	PassWord    string
 	Host        string
 	Name        string
-	TablePrefix string `toml:"table_prefix"`
+	TablePrefix string
+	NeedConnectionPool bool
+	MaxIdleConnections int
+	MaxOpenConnections int
 }
 
 type logInfo struct {

@@ -3,7 +3,6 @@ package dao
 import (
 	"database/sql"
 	"fmt"
-	"log"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -12,7 +11,8 @@ import (
 )
 
 type Dao struct {
-	DB *gorm.DB
+	MasterServiceItems *gorm.DB
+	SlaveServiceItems *gorm.DB
 }
 
 func New() (d *Dao) {
@@ -23,37 +23,33 @@ func New() (d *Dao) {
 }
 
 func (dao *Dao) init() {
-	var (
-		err error
-		dbType, dbName, user, password, host, tablePrefix string
-	)
-	dbType = setting.Config().DB.Type
-	dbName = setting.Config().DB.Name
-	user = setting.Config().DB.User
-	password = setting.Config().DB.PassWord
-	host = setting.Config().DB.Host
-	tablePrefix = setting.Config().DB.TablePrefix
+	dao.MasterServiceItems = openDB(setting.Config().DB.Master.ServiceItems)
+	dao.SlaveServiceItems = openDB(setting.Config().DB.Slave.ServiceItems)
+}
 
-	dao.DB, err = gorm.Open(dbType, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8",
-		user,
-		password,
-		host,
-		dbName))
-
+func openDB (conf *setting.Database) *gorm.DB {
+	DBLink, err := gorm.Open(conf.Type, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8",
+		conf.User,
+		conf.PassWord,
+		conf.Host,
+		conf.Name))
 	if err != nil {
-		log.Println(err)
+		panic(err)
 	}
 	gorm.DefaultTableNameHandler = func (db *gorm.DB, defaultTableName string) string  {
-		return tablePrefix + defaultTableName
+		return conf.TablePrefix + defaultTableName
 	}
-
-	dao.DB.SingularTable(true)
-	dao.DB.DB().SetMaxIdleConns(10)
-	dao.DB.DB().SetMaxOpenConns(100)
+	DBLink.SingularTable(true)
+	if conf.NeedConnectionPool {
+		DBLink.DB().SetMaxIdleConns(conf.MaxIdleConnections)
+		DBLink.DB().SetMaxOpenConns(conf.MaxOpenConnections)
+	}
+	return DBLink
 }
 
 func (dao *Dao) CloseDB() {
-	defer dao.DB.Close()
+	defer dao.MasterServiceItems.Close()
+	defer dao.SlaveServiceItems.Close()
 }
 
 // 结果集转切片

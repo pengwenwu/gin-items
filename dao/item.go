@@ -1,14 +1,13 @@
 package dao
 
 import (
-	"github.com/pkg/errors"
-
 	"gin-items/model"
+	"github.com/pkg/errors"
 )
 
 func (dao *Dao) GetSearchItemIds(fields string, where map[string]interface{}, whereIn model.WhereIn, like map[string]string, order, groupBy string, page, pageSize int) (itemIds []int, err error) {
 	offset := (page - 1) * pageSize
-	query := dao.DB.
+	query := dao.MasterServiceItems.
 		Table(model.ItemSearches{}.TableName()).
 		Select(fields).
 		Where(where)
@@ -36,7 +35,7 @@ func (dao *Dao) GetSearchItemIds(fields string, where map[string]interface{}, wh
 }
 
 func (dao *Dao) GetSearchItemTotal(fields string, where map[string]interface{}, whereIn model.WhereIn, like map[string]string, order string) (total int, err error) {
-	query := dao.DB
+	query := dao.MasterServiceItems
 	if len(fields) > 0 {
 		query =query.Select(fields)
 	}
@@ -57,7 +56,7 @@ func (dao *Dao) GetSearchItemTotal(fields string, where map[string]interface{}, 
 }
 
 func (dao *Dao) GetItem(itemId int, fields string) (item map[string]string, err error) {
-	rows, err := dao.DB.
+	rows, err := dao.MasterServiceItems.
 		Table(model.Items{}.TableName()).
 		Select(fields).
 		Where("item_id = ?", itemId).
@@ -74,7 +73,7 @@ func (dao *Dao) GetItem(itemId int, fields string) (item map[string]string, err 
 
 func (dao *Dao) GetItemPhotos(fields string, where map[string]interface{}, order string, page, pageSize int) (data []map[string]string, err error) {
 	offSet := (page - 1) * pageSize
-	rows, err := dao.DB.
+	rows, err := dao.MasterServiceItems.
 		Table(model.ItemPhotos{}.TableName()).
 		Select(fields).
 		Where(where).
@@ -91,7 +90,7 @@ func (dao *Dao) GetItemPhotos(fields string, where map[string]interface{}, order
 
 func (dao *Dao) GetItemParameters(fields string, where map[string]interface{}, order string, page, pageSize int) (data []map[string]string, err error) {
 	offSet := (page - 1) * pageSize
-	rows, err := dao.DB.
+	rows, err := dao.MasterServiceItems.
 		Table(model.ItemParameters{}.TableName()).
 		Select(fields).
 		Where(where).
@@ -108,7 +107,7 @@ func (dao *Dao) GetItemParameters(fields string, where map[string]interface{}, o
 
 func (dao *Dao) GetItemSkus(fields string, where map[string]interface{}, order string, page, pageSize int) (data []map[string]string, err error) {
 	offSet := (page - 1) * pageSize
-	rows, err := dao.DB.
+	rows, err := dao.MasterServiceItems.
 		Table(model.ItemSkus{}.TableName()).
 		Select(fields).
 		Where(where).
@@ -125,7 +124,7 @@ func (dao *Dao) GetItemSkus(fields string, where map[string]interface{}, order s
 
 func (dao *Dao) GetItemProps(where map[string]interface{}, order string, page, pageSize int) (data []model.ItemProps, err error) {
 	offSet := (page - 1) * pageSize
-	err = dao.DB.
+	err = dao.MasterServiceItems.
 		Table(model.ItemProps{}.TableName()).
 		Where(where).
 		Offset(offSet).
@@ -140,7 +139,7 @@ func (dao *Dao) GetItemProps(where map[string]interface{}, order string, page, p
 
 func (dao *Dao) GetItemPropValues(where map[string]interface{}, order string, page, pageSize int) (data []model.ItemPropValues, err error) {
 	offSet := (page - 1) * pageSize
-	err = dao.DB.
+	err = dao.MasterServiceItems.
 		Table(model.ItemPropValues{}.TableName()).
 		Where(where).
 		Offset(offSet).

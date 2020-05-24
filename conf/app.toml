@@ -3,7 +3,6 @@ run_mode = "debug"
 [app]
     page = 1
     page_size = 10
-    jwt_secret = "23347$040412"
 
 [server]
     http_port = 8000
@@ -11,15 +10,34 @@ run_mode = "debug"
     write_timeout = 60
 
 [database]
-    type = "mysql"
-    host = "127.0.0.1:3306"
-    user = "root"
-    password = "123456"
-#    host = "192.168.0.235:3355"
-#    user = "cishop"
-#    password = "fuyuan1906"
-    name = "service_items"
-    table_prefix = ""
+    [database.master]
+        [database.master.service_items]
+            type = "mysql"
+            host = "127.0.0.1:3306"
+            user = "root"
+            password = "123456"
+            #    host = "192.168.0.235:3355"
+            #    user = "cishop"
+            #    password = "fuyuan1906"
+            name = "service_items"
+            table_prefix = ""
+            need_connection_pool = true
+            max_idle_connections = 10
+            max_open_connections = 100
+    [database.slave]
+        [database.slave.service_items]
+            type = "mysql"
+            host = "127.0.0.1:3306"
+            user = "root"
+            password = "123456"
+        #    host = "192.168.0.235:3355"
+        #    user = "cishop"
+        #    password = "fuyuan1906"
+            name = "service_items"
+            table_prefix = ""
+            need_connection_pool = false
+            max_idle_connections = 0
+            max_open_connections = 0
 
 [log]
     log_file_path = "/Users/pengwenwu/my_go/src/gin-items/logs"
