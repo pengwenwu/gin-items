@@ -3,43 +3,44 @@ package setting
 import (
 	"fmt"
 	"log"
-	"path/filepath"
+	"os"
 	"sync"
 
-	"github.com/BurntSushi/toml"
+	"github.com/fsnotify/fsnotify"
+	"github.com/spf13/viper"
 )
 
 type appConfig struct {
-	RunMode string `toml:"run_mode"`
+	RunMode string `mapstructure:"run_mode"`
 	APP     appInfo
 	Server  serverInfo
-	DB      multiDB `toml:"database"`
+	DB      multiDB `mapstructure:"database"`
 	Log		logInfo
 }
 
 type appInfo struct {
-	Page      int    `toml:"page"`
-	PageSize  int    `toml:"page_size"`
+	Page      int    `mapstructure:"page"`
+	PageSize  int    `mapstructure:"page_size"`
 }
 
 type serverInfo struct {
-	HttpPort     int `toml:"http_port"`
-	ReadTimeout  int `toml:"read_timeout"`
-	WriteTimeout int `toml:"write_timeout"`
+	HttpPort     int `mapstructure:"http_port"`
+	ReadTimeout  int `mapstructure:"read_timeout"`
+	WriteTimeout int `mapstructure:"write_timeout"`
 }
 
 type multiDB struct {
-	Master multiMasterDB `toml:"master"`
-	Slave multiSlaveDB `toml:"slave"`
+	Master multiMasterDB `mapstructure:"master"`
+	Slave multiSlaveDB `mapstructure:"slave"`
 }
 
 type multiMasterDB struct {
-	ServiceItems *Database `toml:"service_items"`
+	ServiceItems *Database `mapstructure:"service_items"`
 	//ShopTrades *Database `toml:"shop_trades"`
 }
 
 type multiSlaveDB struct {
-	ServiceItems *Database `toml:"service_items"`
+	ServiceItems *Database `mapstructure:"service_items"`
 }
 
 type Database struct {
@@ -55,8 +56,8 @@ type Database struct {
 }
 
 type logInfo struct {
-	LogFilePath string `toml:"log_file_path"`
-	LogFileName string `toml:"log_file_name"`
+	LogFilePath string `mapstructure:"log_file_path"`
+	LogFileName string `mapstructure:"log_file_name"`
 }
 
 var (
@@ -68,19 +69,36 @@ func init() {
 }
 
 // 单例模式
-// todo: 动态更新
+// 热更新
 func Config() *appConfig {
 	once.Do(func() {
-		filePath, err := filepath.Abs("conf/app.toml")
+		var confName string
+		confName = os.Getenv("APP_ENV")
+		if confName == "" {
+			confName = "development"
+		}
+		viper.SetConfigName(fmt.Sprintf("config.%s", confName))  // 指定配置文件名称（不需要带后缀）
+		viper.SetConfigType("toml")    // 指定配置文件类型
+		viper.AddConfigPath("./conf/") // 指定查找配置文件的路径（这里使用相对路径）
+		err := viper.ReadInConfig()    // 读取配置信息
+		if err != nil {                // 读取配置信息失败
+			panic(fmt.Errorf("Fatal error config file: %s \n", err))
+		}
+		err = viper.Unmarshal(&cfg)
 		if err != nil {
-			fmt.Printf("file cannot find: %s\n", filePath)
-			panic(err)
+			log.Fatalf("unable to decode into struct, %v", err)
 		}
-		fmt.Printf("parse toml file once. filePath: %s\n", filePath)
-		if _, err := toml.DecodeFile(filePath, &cfg); err != nil {
-			log.Fatalf("Fail to parse 'conf/app.toml': %v", err)
-			panic(err)
-		}
+		viper.WatchConfig()
+		viper.OnConfigChange(func(e fsnotify.Event) {
+			// 配置文件发生变更之后会调用的回调函数
+			fmt.Println("Config file changed:", e.Name)
+
+			err = viper.Unmarshal(&cfg)
+			if err != nil {
+				log.Fatalf("unable to decode into struct, %v", err)
+			}
+		})
 	})
+
 	return cfg
 }
