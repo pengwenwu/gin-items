@@ -4,6 +4,10 @@ import (
 	"database/sql"
 	"fmt"
 
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/golang-migrate/migrate"
+	"github.com/golang-migrate/migrate/database/mysql"
+	_ "github.com/golang-migrate/migrate/source/file"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 
@@ -23,6 +27,8 @@ func New() (d *Dao) {
 }
 
 func (dao *Dao) init() {
+	execMigration(setting.Config().DB.Master.ServiceItems)
+	
 	dao.MasterServiceItems = openDB(setting.Config().DB.Master.ServiceItems)
 	dao.SlaveServiceItems = openDB(setting.Config().DB.Slave.ServiceItems)
 }
@@ -44,7 +50,23 @@ func openDB (conf *setting.Database) *gorm.DB {
 		DBLink.DB().SetMaxIdleConns(conf.MaxIdleConnections)
 		DBLink.DB().SetMaxOpenConns(conf.MaxOpenConnections)
 	}
+
 	return DBLink
+}
+
+func execMigration(conf *setting.Database)  {
+	db, _ := sql.Open(conf.Type, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&multiStatements=true",
+		conf.User,
+		conf.PassWord,
+		conf.Host,
+		conf.Name))
+	driver, _ := mysql.WithInstance(db, &mysql.Config{})
+	m, _ := migrate.NewWithDatabaseInstance(
+		"file://migrations",
+		"mysql",
+		driver,
+	)
+	m.Steps(2)
 }
 
 func (dao *Dao) CloseDB() {

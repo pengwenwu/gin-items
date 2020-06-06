@@ -12,6 +12,8 @@ require (
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.4.0
+	github.com/go-sql-driver/mysql v1.4.1
+	github.com/golang-migrate/migrate v3.5.4+incompatible
 	github.com/gopherjs/gopherjs v0.0.0-20191106031601-ce3c9ade29de // indirect
 	github.com/jehiah/go-strftime v0.0.0-20171201141054-1d33003b3869 // indirect
 	github.com/jinzhu/gorm v1.9.11
