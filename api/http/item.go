@@ -1,14 +1,14 @@
 package http
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/unknwon/com"
-
 	"gin-items/helper"
 	"gin-items/library/app"
 	"gin-items/library/define"
 	"gin-items/library/setting"
+	"gin-items/library/token"
 	"gin-items/model"
+	"github.com/gin-gonic/gin"
+	"github.com/unknwon/com"
 )
 
 //获取商品列表
@@ -65,5 +65,27 @@ func GetItemById(c *gin.Context) {
 }
 
 func AddItem(c *gin.Context)  {
+	appGin := app.Gin{C: c}
 
+	tokenData, _ := c.Keys["token_data"].(*token.MyCustomClaims)
+	item := model.Item{
+		Items: model.Items{
+			State:define.ItemStateNormal,
+			Appkey: tokenData.AppKey,
+			Channel: tokenData.Channel,
+		},
+	}
+	if bindErr := c.BindJSON(&item);bindErr != nil{
+		err := helper.GetEcodeBindJson(bindErr)
+		appGin.Response(nil, err)
+		return
+	}
+
+	itemId, err := serv.Add(item)
+	if err != nil {
+		appGin.Response(nil, err)
+		return
+	}
+
+	appGin.Response(itemId, nil)
 }

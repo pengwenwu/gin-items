@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"gin-items/library/ecode"
 	"gin-items/model"
 	"github.com/pkg/errors"
 )
@@ -149,5 +150,15 @@ func (dao *Dao) GetItemPropValues(where map[string]interface{}, order string, pa
 	if err != nil {
 		return
 	}
+	return
+}
+
+func (dao *Dao) InsertItem(item model.Items) (itemId int, err error) {
+	dao.MasterServiceItems.Debug().Create(&item)
+	if item.ItemId == 0 {
+		err = ecode.InsertItemErr
+		return
+	}
+	itemId = item.ItemId
 	return
 }

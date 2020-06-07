@@ -30,8 +30,6 @@ func InitRouter() *gin.Engine {
 		})
 	})
 
-	//r.GET("/auth", api.GetAuth)
-
 	itemGroup := r.Group("")
 	itemGroup.Use(jwt.Jwt())
 	{

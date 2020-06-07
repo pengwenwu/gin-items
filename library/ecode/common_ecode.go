@@ -6,6 +6,7 @@ var (
 
 	NoAuthorization  = add(-101) // 未获取到token
 	AuthorizationErr = add(-102) // token非法
+	NoAppKey = add(-103) // 缺少appkey
 
 	IllegalParams    = add(-201) // 参数非法
 

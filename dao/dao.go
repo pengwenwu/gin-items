@@ -27,8 +27,9 @@ func New() (d *Dao) {
 }
 
 func (dao *Dao) init() {
-	execMigration(setting.Config().DB.Master.ServiceItems)
-	
+	// 防止清空表，暂时注释
+	//execMigration(setting.Config().DB.Master.ServiceItems)
+
 	dao.MasterServiceItems = openDB(setting.Config().DB.Master.ServiceItems)
 	dao.SlaveServiceItems = openDB(setting.Config().DB.Slave.ServiceItems)
 }

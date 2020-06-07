@@ -1,11 +1,10 @@
 package service
 
 import (
-	"github.com/astaxie/beego/validation"
-
 	"gin-items/helper"
 	"gin-items/library/define"
 	"gin-items/model"
+	"github.com/astaxie/beego/validation"
 )
 
 func (serv *Service) GetItemList(params model.ArgItemSearch) (itemList map[int]interface{}, total int, err error) {
@@ -108,5 +107,28 @@ func (serv *Service) getPropsData(itemId int) (propsData []model.ItemProps, err 
 		tmp, err = serv.dao.GetItemPropValues(where, "sort asc", 1, 20)
 		propsData[k].Values = append(v.Values, tmp...)
 	}
+	return
+}
+
+func (serv *Service) Add(item model.Item) (itemId int, err error) {
+	valid := validation.Validation{}
+	valid.Required(item.Appkey, "appkey")
+	valid.Required(item.Name, "name")
+	// todo: 参数验证
+	if valid.HasErrors() {
+		err = helper.GetEcodeValidParam(valid.Errors)
+		return
+	}
+	baseItems := model.Items{
+		ItemId:  0,
+		Appkey:  item.Appkey,
+		Channel: item.Channel,
+		Name:    item.Name,
+		Photo:   item.Photo,
+		Detail:  item.Detail,
+		State:   0,
+		Model:   model.Model{},
+	}
+	itemId, err = serv.dao.InsertItem(baseItems)
 	return
 }

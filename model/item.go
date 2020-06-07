@@ -1,7 +1,9 @@
 package model
 
 import (
+	"github.com/jinzhu/gorm"
 	"reflect"
+	"time"
 )
 
 type Items struct {
@@ -89,11 +91,11 @@ type ItemSearches struct {
 }
 
 type Item struct {
-	Base Items
-	Photos     *ItemPhotos `json:"photos,omitempty"`
-	Parameters *ItemParameters `json:"parameters,omitempty"`
-	Skus       *ItemSkus `json:"skus,omitempty"`
-	Props      *ItemProps `json:"props,omitempty"`
+	Items
+	Photos     []*ItemPhotos `json:"photos,omitempty"`
+	Parameters []*ItemParameters `json:"parameters,omitempty"`
+	Skus       []*ItemSkus `json:"skus,omitempty"`
+	Props      []*ItemProps `json:"props,omitempty"`
 }
 
 func (Items) TableName() string {
@@ -139,4 +141,14 @@ func GetFields(i interface{}) (fields []string) {
 		fields = append(fields, sf.Tag.Get("json"))
 	}
 	return
+}
+
+func (items *Items) BeforeCreate(scope *gorm.Scope) error {
+	scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
+	scope.SetColumn("last_dated", "0000-00-00 00:00:00")
+	return nil
+}
+func (items *Items) BeforeUpdate(scope *gorm.Scope) error {
+	scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
+	return nil
 }
