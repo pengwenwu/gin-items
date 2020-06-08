@@ -154,7 +154,7 @@ func (dao *Dao) GetItemPropValues(where map[string]interface{}, order string, pa
 }
 
 func (dao *Dao) InsertItem(item model.Items) (itemId int, err error) {
-	dao.MasterServiceItems.Debug().Create(&item)
+	dao.MasterServiceItems.Create(&item)
 	if item.ItemId == 0 {
 		err = ecode.InsertItemErr
 		return

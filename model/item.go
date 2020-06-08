@@ -7,7 +7,7 @@ import (
 )
 
 type Items struct {
-	ItemId  int    `gorm:"column:item_id" json:"item_id"`
+	ItemId  int    `gorm:"column:item_id;primary_key" json:"item_id"`
 	Appkey  string `gorm:"column:appkey" json:"appkey"`
 	Channel int    `gorm:"column:channel" json:"channel"`
 	Name    string `gorm:"column:name" json:"name"`
@@ -18,7 +18,7 @@ type Items struct {
 }
 
 type ItemSkus struct {
-	SkuId      int    `gorm:"column:sku_id" json:"sku_id"`
+	SkuId      int    `gorm:"column:sku_id;primary_key" json:"sku_id"`
 	ItemId     int    `gorm:"column:item_id" json:"item_id"`
 	Appkey     string `gorm:"column:appkey" json:"appkey"`
 	Channel    int    `gorm:"column:channel" json:"channel"`
@@ -33,7 +33,7 @@ type ItemSkus struct {
 }
 
 type ItemProps struct {
-	Id        int    `gorm:"column:id" json:"id"`
+	Id        int    `gorm:"column:id;primary_key" json:"id"`
 	ItemId    int    `gorm:"column:item_id" json:"item_id"`
 	PropName  string `gorm:"column:prop_name" json:"prop_name"`
 	Sort      int    `gorm:"column:sort" json:"sort"`
@@ -45,7 +45,7 @@ type ItemProps struct {
 }
 
 type ItemPropValues struct {
-	Id            int    `gorm:"column:id" json:"id"`
+	Id            int    `gorm:"column:id;primary_key" json:"id"`
 	ItemId        int    `gorm:"column:item_id" json:"item_id"`
 	PropName      string `gorm:"column:prop_name" json:"prop_name"`
 	PropValueName string `gorm:"column:prop_value_name" json:"prop_value_name"`
@@ -58,7 +58,7 @@ type ItemPropValues struct {
 }
 
 type ItemPhotos struct {
-	Id     int    `gorm:"column:id" json:"id"`
+	Id     int    `gorm:"column:id;primary_key" json:"id"`
 	ItemId int    `gorm:"column:item_id" json:"item_id"`
 	Photo  string `gorm:"column:photo" json:"photo"`
 	Sort   int    `gorm:"column:sort" json:"sort"`
@@ -67,7 +67,7 @@ type ItemPhotos struct {
 }
 
 type ItemParameters struct {
-	Id         int    `gorm:"column:id" json:"id"`
+	Id         int    `gorm:"column:id;primary_key" json:"id"`
 	ItemId     int    `gorm:"column:item_id" json:"item_id"`
 	Parameters string `gorm:"column:parameters" json:"parameters"`
 	Value      string `gorm:"column:value" json:"value"`
@@ -77,7 +77,7 @@ type ItemParameters struct {
 }
 
 type ItemSearches struct {
-	Id        int    `gorm:"column:id" json:"id"`
+	Id        int    `gorm:"column:id;primary_key" json:"id"`
 	Appkey    string `gorm:"column:appkey" json:"appkey"`
 	Channel   int    `gorm:"column:channel" json:"channel"`
 	ItemId    int    `gorm:"column:item_id" json:"item_id"`
