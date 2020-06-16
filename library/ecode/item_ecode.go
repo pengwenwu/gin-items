@@ -5,4 +5,5 @@ package ecode
 
 var (
 	InsertItemErr = New(1000) // 新增item失败
+	InsertSkuErr = New(1001) // 新增sku失败
 )

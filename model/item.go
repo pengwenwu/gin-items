@@ -92,10 +92,10 @@ type ItemSearches struct {
 
 type Item struct {
 	Items
-	Photos     []*ItemPhotos `json:"photos,omitempty"`
-	Parameters []*ItemParameters `json:"parameters,omitempty"`
-	Skus       []*ItemSkus `json:"skus,omitempty"`
-	Props      []*ItemProps `json:"props,omitempty"`
+	Photos     []ItemPhotos `json:"photos,omitempty"`
+	Parameters []ItemParameters `json:"parameters,omitempty"`
+	Skus       []ItemSkus `json:"skus,omitempty"`
+	Props      []ItemProps `json:"props,omitempty"`
 }
 
 func (Items) TableName() string {
@@ -149,6 +149,16 @@ func (items *Items) BeforeCreate(scope *gorm.Scope) error {
 	return nil
 }
 func (items *Items) BeforeUpdate(scope *gorm.Scope) error {
+	scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
+	return nil
+}
+
+func (sku *ItemSkus) BeforeCreate(scope *gorm.Scope) error {
+	scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
+	scope.SetColumn("last_dated", "0000-00-00 00:00:00")
+	return nil
+}
+func (sku *ItemSkus) BeforeUpdate(scope *gorm.Scope) error {
 	scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
 	return nil
 }

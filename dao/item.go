@@ -162,3 +162,13 @@ func (dao *Dao) InsertItem(item model.Items) (itemId int, err error) {
 	itemId = item.ItemId
 	return
 }
+
+func (dao *Dao) InsertSku(sku model.ItemSkus) (skuId int, err error) {
+	dao.MasterServiceItems.Create(&sku)
+	if sku.SkuId == 0 {
+		err = ecode.InsertItemErr
+		return
+	}
+	skuId = sku.SkuId
+	return
+}

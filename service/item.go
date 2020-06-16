@@ -1,10 +1,12 @@
 package service
 
 import (
+	"fmt"
 	"gin-items/helper"
 	"gin-items/library/define"
 	"gin-items/model"
 	"github.com/astaxie/beego/validation"
+	"strings"
 )
 
 func (serv *Service) GetItemList(params model.ArgItemSearch) (itemList map[int]interface{}, total int, err error) {
@@ -119,6 +121,57 @@ func (serv *Service) Add(item model.Item) (itemId int, err error) {
 		err = helper.GetEcodeValidParam(valid.Errors)
 		return
 	}
+
+	var propValues []model.ItemPropValues
+	for _, prop := range item.Props {
+		for _, propValue := range prop.Values {
+			propValue.PropName = prop.PropName
+			propValues = append(propValues, propValue)
+		}
+	}
+
+	for _, sku := range item.Skus {
+		skuProps := strings.Split(sku.Properties, ";")
+		skuName := item.Name
+		for _, v := range skuProps {
+			skuProp := strings.Split(v, ":")
+			skuName += " " + skuProp[1]
+
+			for _, propValue := range propValues {
+				if propValue.PropName == skuProp[0] && propValue.PropValueName == skuProp[1] && propValue.PropPhoto != "" {
+					sku.SkuPhoto = propValue.PropPhoto
+				}
+			}
+		}
+		if sku.SkuName == "" {
+			sku.SkuName = skuName
+		}
+		sku.Appkey = item.Appkey
+		sku.Channel = item.Channel
+		sku.ItemName = item.Name
+		sku.State = define.ItemSkuStateNormal
+	}
+	if len(item.Skus) == 0 {
+		item.Skus[0] = model.ItemSkus{
+			SkuName:    item.Name,
+			SkuPhoto:   item.Photo,
+		}
+	}
+	// 当主图没有时，轮播图第一张图设置为主图
+	if len(item.Photos) > 0 && item.Photo == "" {
+		item.Photo = item.Photos[0].Photo
+	}
+	// 当没有轮播图、主图的时候，设置默认图
+	if len(item.Photos) == 0 && item.Photo == "" {
+		item.Photo = define.ItemDefaultPhoto
+	}
+	// 当没有轮播图的时候，选设置的第一张默认图
+	if len(item.Photos) == 0 {
+		item.Photos[0] = model.ItemPhotos{
+			Photo:  item.Photo,
+		}
+	}
+
 	baseItems := model.Items{
 		ItemId:  0,
 		Appkey:  item.Appkey,
@@ -126,9 +179,21 @@ func (serv *Service) Add(item model.Item) (itemId int, err error) {
 		Name:    item.Name,
 		Photo:   item.Photo,
 		Detail:  item.Detail,
-		State:   0,
 		Model:   model.Model{},
 	}
 	itemId, err = serv.dao.InsertItem(baseItems)
+	if err != nil {
+		return
+	}
+	serv.addSkus(itemId, item.Skus)
+
 	return
+}
+
+func (serv *Service) addSkus(itemId int, skus []model.ItemSkus)  {
+	for _, sku :=range skus {
+		sku.ItemId = itemId
+		serv.dao.InsertSku(sku)
+		fmt.Println(sku.SkuId)
+	}
 }
