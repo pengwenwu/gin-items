@@ -6,4 +6,6 @@ package ecode
 var (
 	InsertItemErr = New(1000) // 新增item失败
 	InsertSkuErr = New(1001) // 新增sku失败
+	InsertPropErr = New(1002) // 新增prop失败
+	InsertPropValueErr = New(1003) // 新增propValue失败
 )

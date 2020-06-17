@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"gin-items/helper"
 	"gin-items/library/define"
 	"gin-items/model"
@@ -130,7 +129,7 @@ func (serv *Service) Add(item model.Item) (itemId int, err error) {
 		}
 	}
 
-	for _, sku := range item.Skus {
+	for k, sku := range item.Skus {
 		skuProps := strings.Split(sku.Properties, ";")
 		skuName := item.Name
 		for _, v := range skuProps {
@@ -150,6 +149,8 @@ func (serv *Service) Add(item model.Item) (itemId int, err error) {
 		sku.Channel = item.Channel
 		sku.ItemName = item.Name
 		sku.State = define.ItemSkuStateNormal
+
+		item.Skus[k] = sku
 	}
 	if len(item.Skus) == 0 {
 		item.Skus[0] = model.ItemSkus{
@@ -186,14 +187,33 @@ func (serv *Service) Add(item model.Item) (itemId int, err error) {
 		return
 	}
 	serv.addSkus(itemId, item.Skus)
+	serv.addProps(itemId, item.Props)
 
 	return
 }
 
+// 添加sku
 func (serv *Service) addSkus(itemId int, skus []model.ItemSkus)  {
 	for _, sku :=range skus {
 		sku.ItemId = itemId
 		serv.dao.InsertSku(sku)
-		fmt.Println(sku.SkuId)
+		// todo: 报警校验失败
+	}
+}
+
+// 添加规格属性
+func (serv *Service) addProps(itemId int, props []model.ItemProps) {
+	for _, prop := range props {
+		prop.ItemId = itemId
+		prop.State = define.ItemPropsStateNormal
+		serv.dao.InsertProp(prop)
+		// todo: 报警校验
+		for _, propValue := range prop.Values {
+			propValue.ItemId = itemId
+			propValue.PropName = prop.PropName
+			propValue.State = define.ItemPropsValuesStateNormal
+			serv.dao.InsertPropValue(propValue)
+			// todo：报警校验
+		}
 	}
 }

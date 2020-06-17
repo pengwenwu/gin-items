@@ -162,3 +162,23 @@ func (sku *ItemSkus) BeforeUpdate(scope *gorm.Scope) error {
 	scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
 	return nil
 }
+
+func (prop *ItemProps) BeforeCreate(scope *gorm.Scope) error {
+	scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
+	scope.SetColumn("last_dated", "0000-00-00 00:00:00")
+	return nil
+}
+func (prop *ItemProps) BeforeUpdate(scope *gorm.Scope) error {
+	scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
+	return nil
+}
+
+func (propValue *ItemPropValues) BeforeCreate(scope *gorm.Scope) error {
+	scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
+	scope.SetColumn("last_dated", "0000-00-00 00:00:00")
+	return nil
+}
+func (propValue *ItemPropValues) BeforeUpdate(scope *gorm.Scope) error {
+	scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
+	return nil
+}

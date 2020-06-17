@@ -172,3 +172,23 @@ func (dao *Dao) InsertSku(sku model.ItemSkus) (skuId int, err error) {
 	skuId = sku.SkuId
 	return
 }
+
+func (dao *Dao) InsertProp(prop model.ItemProps) (id int, err error) {
+	dao.MasterServiceItems.Create(&prop)
+	if prop.Id == 0 {
+		err = ecode.InsertPropErr
+		return
+	}
+	id = prop.Id
+	return
+}
+
+func (dao *Dao) InsertPropValue(propValue model.ItemPropValues) (id int, err error) {
+	dao.MasterServiceItems.Create(&propValue)
+	if propValue.Id == 0 {
+		err = ecode.InsertPropValueErr
+		return
+	}
+	id = propValue.Id
+	return
+}
