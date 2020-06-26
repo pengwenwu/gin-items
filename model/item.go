@@ -182,3 +182,23 @@ func (propValue *ItemPropValues) BeforeUpdate(scope *gorm.Scope) error {
 	scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
 	return nil
 }
+
+func (photo *ItemPhotos) BeforeCreate(scope *gorm.Scope) error {
+	scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
+	scope.SetColumn("last_dated", "0000-00-00 00:00:00")
+	return nil
+}
+func (photo *ItemPhotos) BeforeUpdate(scope *gorm.Scope) error {
+	scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
+	return nil
+}
+
+func (parameter *ItemParameters) BeforeCreate(scope *gorm.Scope) error {
+	scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
+	scope.SetColumn("last_dated", "0000-00-00 00:00:00")
+	return nil
+}
+func (parameter *ItemParameters) BeforeUpdate(scope *gorm.Scope) error {
+	scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
+	return nil
+}

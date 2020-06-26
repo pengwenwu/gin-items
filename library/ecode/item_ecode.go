@@ -8,4 +8,6 @@ var (
 	InsertSkuErr = New(1001) // 新增sku失败
 	InsertPropErr = New(1002) // 新增prop失败
 	InsertPropValueErr = New(1003) // 新增propValue失败
+	InsertPhotoErr = New(1004) // 新增photo失败
+	InsertParameterErr = New(1005) // 新增parameter失败
 )

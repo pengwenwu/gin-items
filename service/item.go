@@ -188,6 +188,8 @@ func (serv *Service) Add(item model.Item) (itemId int, err error) {
 	}
 	serv.addSkus(itemId, item.Skus)
 	serv.addProps(itemId, item.Props)
+	serv.addPhotos(itemId, item.Photos)
+	serv.addParameters(itemId, item.Parameters)
 
 	return
 }
@@ -215,5 +217,23 @@ func (serv *Service) addProps(itemId int, props []model.ItemProps) {
 			serv.dao.InsertPropValue(propValue)
 			// todo：报警校验
 		}
+	}
+}
+
+func (serv *Service) addPhotos(itemId int, photos []model.ItemPhotos) {
+	for _, photo := range photos {
+		photo.ItemId = itemId
+		photo.State = define.ItemPhotosStateNormal
+		serv.dao.InsertPhoto(photo)
+		// todo: 报警校验
+	}
+}
+
+func (serv *Service) addParameters(itemId int, parameters []model.ItemParameters) {
+	for _, parameter := range parameters {
+		parameter.ItemId = itemId
+		parameter.State = define.ItemParametersStateNormal
+		serv.dao.InsertParameter(parameter)
+		// todo: 报警校验
 	}
 }

@@ -192,3 +192,23 @@ func (dao *Dao) InsertPropValue(propValue model.ItemPropValues) (id int, err err
 	id = propValue.Id
 	return
 }
+
+func (dao *Dao) InsertPhoto(photo model.ItemPhotos) (id int, err error) {
+	dao.MasterServiceItems.Create(&photo)
+	if photo.Id == 0 {
+		err = ecode.InsertPhotoErr
+		return
+	}
+	id = photo.Id
+	return
+}
+
+func (dao *Dao) InsertParameter(parameter model.ItemParameters) (id int, err error) {
+	dao.MasterServiceItems.Create(&parameter)
+	if parameter.Id == 0 {
+		err = ecode.InsertParameterErr
+		return
+	}
+	id = parameter.Id
+	return
+}

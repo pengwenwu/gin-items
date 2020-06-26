@@ -5,4 +5,6 @@ var ItemMsgMaps = map[Code]string {
 	InsertSkuErr: "新增sku失败",
 	InsertPropErr: "新增prop失败",
 	InsertPropValueErr: "新增prop_value失败",
+	InsertPhotoErr: "新增photo失败",
+	InsertParameterErr: "新增parameter失败",
 }
