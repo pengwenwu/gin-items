@@ -40,4 +40,4 @@ const (
 )
 
 // 商品默认图片
-const ItemDefaultPhoto = "http://img2.ciurl.cn/flashsale/upload/xinfotek_upload/2017/06/27/1498531262878938.png"
+const ItemDefaultPhoto = "//img2.ciurl.cn/flashsale/upload/xinfotek_upload/2017/06/27/1498531262878938.png"

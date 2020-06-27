@@ -1,9 +1,11 @@
 package model
 
 import (
-	"github.com/jinzhu/gorm"
 	"reflect"
 	"time"
+
+	"github.com/astaxie/beego/validation"
+	"github.com/jinzhu/gorm"
 )
 
 type Items struct {
@@ -201,4 +203,43 @@ func (parameter *ItemParameters) BeforeCreate(scope *gorm.Scope) error {
 func (parameter *ItemParameters) BeforeUpdate(scope *gorm.Scope) error {
 	scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
 	return nil
+}
+
+func (item *Item) Valid(v *validation.Validation) {
+	v.Required(item.Appkey, "appkey")
+	v.Required(item.Appkey, "channel")
+	v.Required(item.Name, "name")
+
+	if len(item.Props) > 0 {
+		for _, prop := range item.Props {
+			v.Required(prop.PropName, "props.prop_name")
+			v.Required(prop.Values, "props.values")
+			if len(prop.Values) > 0 {
+				for _, propValues := range prop.Values {
+					v.Required(propValues.PropValueName, "props.values.prop_value_name")
+				}
+			}
+		}
+	}
+
+	if len(item.Skus) > 0 {
+		for _, sku := range item.Skus {
+			if sku.SkuName == "" && sku.Properties == "" {
+				v.SetError("skus.properties", "缺少sku_name")
+			}
+		}
+	}
+
+	if len(item.Photos) > 0 {
+		for _, photo := range item.Photos {
+			v.Required(photo.Photo, "photos.photo")
+		}
+	}
+
+	if len(item.Parameters) > 0 {
+		for _, parameter := range item.Parameters {
+			v.Required(parameter.Value, "parameters.parameters")
+			v.Required(parameter.Value, "parameters.value")
+		}
+	}
 }

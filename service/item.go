@@ -1,11 +1,13 @@
 package service
 
 import (
+	"strings"
+
+	"github.com/astaxie/beego/validation"
+
 	"gin-items/helper"
 	"gin-items/library/define"
 	"gin-items/model"
-	"github.com/astaxie/beego/validation"
-	"strings"
 )
 
 func (serv *Service) GetItemList(params model.ArgItemSearch) (itemList map[int]interface{}, total int, err error) {
@@ -113,50 +115,60 @@ func (serv *Service) getPropsData(itemId int) (propsData []model.ItemProps, err 
 
 func (serv *Service) Add(item model.Item) (itemId int, err error) {
 	valid := validation.Validation{}
-	valid.Required(item.Appkey, "appkey")
-	valid.Required(item.Name, "name")
-	// todo: 参数验证
+	valid.Valid(&item)
 	if valid.HasErrors() {
 		err = helper.GetEcodeValidParam(valid.Errors)
 		return
 	}
 
 	var propValues []model.ItemPropValues
-	for _, prop := range item.Props {
-		for _, propValue := range prop.Values {
-			propValue.PropName = prop.PropName
-			propValues = append(propValues, propValue)
-		}
-	}
-
-	for k, sku := range item.Skus {
-		skuProps := strings.Split(sku.Properties, ";")
-		skuName := item.Name
-		for _, v := range skuProps {
-			skuProp := strings.Split(v, ":")
-			skuName += " " + skuProp[1]
-
-			for _, propValue := range propValues {
-				if propValue.PropName == skuProp[0] && propValue.PropValueName == skuProp[1] && propValue.PropPhoto != "" {
-					sku.SkuPhoto = propValue.PropPhoto
-				}
+	if len(item.Props) > 0 {
+		for _, prop := range item.Props {
+			for _, propValue := range prop.Values {
+				propValue.PropName = prop.PropName
+				propValues = append(propValues, propValue)
 			}
 		}
-		if sku.SkuName == "" {
-			sku.SkuName = skuName
-		}
-		sku.Appkey = item.Appkey
-		sku.Channel = item.Channel
-		sku.ItemName = item.Name
-		sku.State = define.ItemSkuStateNormal
-
-		item.Skus[k] = sku
 	}
-	if len(item.Skus) == 0 {
-		item.Skus[0] = model.ItemSkus{
-			SkuName:    item.Name,
-			SkuPhoto:   item.Photo,
+
+	if len(item.Skus) > 0 {
+		for k, sku := range item.Skus {
+			skuName := item.Name
+			if sku.Properties != "" {
+				skuProps := strings.Split(sku.Properties, ";")
+				for _, v := range skuProps {
+					skuProp := strings.Split(v, ":")
+					skuName += " " + skuProp[1]
+
+					for _, propValue := range propValues {
+						if propValue.PropName == skuProp[0] && propValue.PropValueName == skuProp[1] && propValue.PropPhoto != "" {
+							sku.SkuPhoto = propValue.PropPhoto
+						}
+					}
+				}
+			}
+
+			if sku.SkuName == "" {
+				sku.SkuName = skuName
+			}
+			sku.Appkey = item.Appkey
+			sku.Channel = item.Channel
+			sku.ItemName = item.Name
+			sku.State = define.ItemSkuStateNormal
+
+			item.Skus[k] = sku
 		}
+	}
+
+	if len(item.Skus) == 0 {
+		item.Skus = append(item.Skus, model.ItemSkus{
+			Appkey:   item.Appkey,
+			Channel:  item.Channel,
+			ItemName: item.Name,
+			SkuName:  item.Name,
+			SkuPhoto: item.Photo,
+			State:    define.ItemSkuStateNormal,
+		})
 	}
 	// 当主图没有时，轮播图第一张图设置为主图
 	if len(item.Photos) > 0 && item.Photo == "" {
@@ -168,9 +180,9 @@ func (serv *Service) Add(item model.Item) (itemId int, err error) {
 	}
 	// 当没有轮播图的时候，选设置的第一张默认图
 	if len(item.Photos) == 0 {
-		item.Photos[0] = model.ItemPhotos{
+		item.Photos = append(item.Photos, model.ItemPhotos{
 			Photo:  item.Photo,
-		}
+		})
 	}
 
 	baseItems := model.Items{
@@ -237,3 +249,4 @@ func (serv *Service) addParameters(itemId int, parameters []model.ItemParameters
 		// todo: 报警校验
 	}
 }
+
