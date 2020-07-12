@@ -16,8 +16,8 @@ func (dao *Dao) GetSearchItemIds(fields string, where map[string]interface{}, wh
 		query = query.Where("item_id in (?)", whereIn.ItemId)
 	}
 	if len(like) > 0 {
-		for k,v := range like {
-			query = query.Where(k + " like ?", "%" + v +"%")
+		for k, v := range like {
+			query = query.Where(k+" like ?", "%"+v+"%")
 		}
 	}
 	rows, err := query.Offset(offset).Limit(pageSize).Rows()
@@ -38,15 +38,15 @@ func (dao *Dao) GetSearchItemIds(fields string, where map[string]interface{}, wh
 func (dao *Dao) GetSearchItemTotal(fields string, where map[string]interface{}, whereIn model.WhereIn, like map[string]string, order string) (total int, err error) {
 	query := dao.MasterServiceItems
 	if len(fields) > 0 {
-		query =query.Select(fields)
+		query = query.Select(fields)
 	}
 	query = query.Where(where)
 	if len(whereIn.ItemId) > 0 {
 		query = query.Where("item_id in (?)", whereIn.ItemId)
 	}
 	if len(like) > 0 {
-		for k,v := range like {
-			query = query.Where(k + " like ?", "%" + v +"%")
+		for k, v := range like {
+			query = query.Where(k+" like ?", "%"+v+"%")
 		}
 	}
 	err = query.Model(&model.ItemSearches{}).Count(&total).Error
@@ -56,100 +56,59 @@ func (dao *Dao) GetSearchItemTotal(fields string, where map[string]interface{}, 
 	return
 }
 
-func (dao *Dao) GetItem(itemId int, fields string) (item map[string]string, err error) {
-	rows, err := dao.MasterServiceItems.
-		Table(model.Items{}.TableName()).
-		Select(fields).
-		Where("item_id = ?", itemId).
-		Rows()
-	if err != nil {
-		return
-	}
-	data := RowsToSliceMap(rows)
-	if len(data) > 0 {
-		item = data[0]
-	}
-	return
-}
-
-func (dao *Dao) GetItemPhotos(fields string, where map[string]interface{}, order string, page, pageSize int) (data []map[string]string, err error) {
-	offSet := (page - 1) * pageSize
-	rows, err := dao.MasterServiceItems.
-		Table(model.ItemPhotos{}.TableName()).
-		Select(fields).
+func (dao *Dao) GetItem(itemId int, where map[string]interface{}) (item model.Items, err error) {
+	err = dao.MasterServiceItems.
+		Table(item.TableName()).
 		Where(where).
-		Order(order).
-		Offset(offSet).
-		Limit(pageSize).
-		Rows()
-	if err != nil {
-		return
-	}
-	data = RowsToSliceMap(rows)
+		First(&item).Error
 	return
 }
 
-func (dao *Dao) GetItemParameters(fields string, where map[string]interface{}, order string, page, pageSize int) (data []map[string]string, err error) {
-	offSet := (page - 1) * pageSize
-	rows, err := dao.MasterServiceItems.
-		Table(model.ItemParameters{}.TableName()).
-		Select(fields).
+func (dao *Dao) GetSku(skuId int, where map[string]interface{}) (sku model.ItemSkus, err error) {
+	err = dao.MasterServiceItems.
+		Table(sku.TableName()).
 		Where(where).
-		Order(order).
-		Offset(offSet).
-		Limit(pageSize).
-		Rows()
-	if err != nil {
-		return
-	}
-	data = RowsToSliceMap(rows)
+		First(&sku).Error
 	return
 }
 
-func (dao *Dao) GetItemSkus(fields string, where map[string]interface{}, order string, page, pageSize int) (data []map[string]string, err error) {
-	offSet := (page - 1) * pageSize
-	rows, err := dao.MasterServiceItems.
+func (dao *Dao) GetSkus(itemId int, where map[string]interface{}) (skus []model.ItemSkus, err error) {
+	err = dao.MasterServiceItems.
 		Table(model.ItemSkus{}.TableName()).
-		Select(fields).
 		Where(where).
-		Order(order).
-		Offset(offSet).
-		Limit(pageSize).
-		Rows()
-	if err != nil {
-		return
-	}
-	data = RowsToSliceMap(rows)
+		Find(&skus).Error
 	return
 }
 
-func (dao *Dao) GetItemProps(where map[string]interface{}, order string, page, pageSize int) (data []model.ItemProps, err error) {
-	offSet := (page - 1) * pageSize
+func (dao *Dao) GetPhotos(itemId int, where map[string]interface{}) (photos []model.ItemPhotos, err error) {
+	err = dao.MasterServiceItems.
+		Table(model.ItemPhotos{}.TableName()).
+		Where(where).
+		Find(&photos).Error
+	return
+}
+
+func (dao *Dao) GetParameters(itemId int, where map[string]interface{}) (parameters []model.ItemParameters, err error) {
+	err = dao.MasterServiceItems.
+		Table(model.ItemParameters{}.TableName()).
+		Where(where).
+		Find(&parameters).Error
+	return
+}
+
+func (dao *Dao) GetProps(itemId int, where map[string]interface{}) (props []model.ItemProps, err error) {
 	err = dao.MasterServiceItems.
 		Table(model.ItemProps{}.TableName()).
 		Where(where).
-		Offset(offSet).
-		Limit(pageSize).
-		Find(&data).
-		Error
-	if err != nil {
-		return
-	}
+		Find(&props).Error
 	return
 }
 
-func (dao *Dao) GetItemPropValues(where map[string]interface{}, order string, page, pageSize int) (data []model.ItemPropValues, err error) {
-	offSet := (page - 1) * pageSize
+func (dao *Dao) GetPropValues(itemId int, where map[string]interface{}) (propValues []model.ItemPropValues, err error) {
 	err = dao.MasterServiceItems.
 		Table(model.ItemPropValues{}.TableName()).
 		Where(where).
-		Offset(offSet).
-		Limit(pageSize).
-		Find(&data).
-		Error
-	if err != nil {
-		return
-	}
+		Find(&propValues).Error
 	return
 }
 

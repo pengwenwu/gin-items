@@ -1,14 +1,15 @@
 package http
 
 import (
+	"github.com/gin-gonic/gin"
+	"github.com/unknwon/com"
+
 	"gin-items/helper"
 	"gin-items/library/app"
 	"gin-items/library/define"
 	"gin-items/library/setting"
 	"gin-items/library/token"
 	"gin-items/model"
-	"github.com/gin-gonic/gin"
-	"github.com/unknwon/com"
 )
 
 //获取商品列表
@@ -40,7 +41,21 @@ func GetItemList(c *gin.Context) {
 	return
 }
 
-func GetItemById(c *gin.Context) {
+// 获取item基础数据
+func GetItemBaseByItemId(c *gin.Context) {
+	appGin := app.Gin{C: c}
+	itemId := com.StrTo(c.Param("item_id")).MustInt()
+
+	item, err := serv.GetItemBaseByItemId(itemId)
+	if err != nil {
+		appGin.Response(nil, err)
+		return
+	}
+	appGin.Response(item, nil)
+	return
+}
+
+func GetItemByItemId(c *gin.Context) {
 	appGin := app.Gin{C: c}
 
 	itemId := com.StrTo(c.Param("item_id")).MustInt()
@@ -50,11 +65,8 @@ func GetItemById(c *gin.Context) {
 		appGin.Response(nil, err)
 		return
 	}
-	// 先获取item的状态
-	argGetItemState := model.ArgGetItemById{Fields:"item_id,state"}
-	itemInfo, err := serv.GetItemById(argGetItemState, itemId, define.ItemSkuStateNormal)
 
-	item, err := serv.GetItemById(argGetItemById, itemId, itemInfo["state"])
+	item, err := serv.GetItemByItemId(itemId)
 	if err != nil {
 		appGin.Response(nil, err)
 		return

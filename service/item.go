@@ -17,7 +17,7 @@ func (serv *Service) GetItemList(params model.ArgItemSearch) (itemList map[int]i
 		err = helper.GetEcodeValidParam(valid.Errors)
 		return
 	}
-	fields := params.Fields
+	//fields := params.Fields
 	whereMap := params.GetWhereMap()
 	like := params.Like
 	for k,v := range like {
@@ -35,10 +35,9 @@ func (serv *Service) GetItemList(params model.ArgItemSearch) (itemList map[int]i
 		return
 	}
 	// 查询对应的商品详情
-	argGetItem := model.ArgGetItemById{Fields:fields}
 	itemList = make(map[int]interface{})
 	for _,itemId := range itemIds {
-		item, err  := serv.GetItemById(argGetItem, itemId, define.ItemSkuStateNormal)
+		item, err  := serv.GetItemByItemId(itemId)
 		if err != nil {
 			continue
 		}
@@ -47,68 +46,48 @@ func (serv *Service) GetItemList(params model.ArgItemSearch) (itemList map[int]i
 	return
 }
 
-func (serv *Service) GetItemById(params model.ArgGetItemById, itemId int, skuState interface{}) (item map[string]interface{}, err error) {
+func (serv *Service) GetItemBaseByItemId(itemId int) (item model.Items, err error) {
 	valid := validation.Validation{}
 	valid.Min(itemId, 1, "item_id")
-	valid.Required(params.Fields, "fields")
 	if valid.HasErrors() {
 		err = helper.GetEcodeValidParam(valid.Errors)
 		return
 	}
-	item = make(map[string]interface{})
-	itemFields := helper.GetItemFields()
-	for k, v := range itemFields {
-		getField := helper.GetVerifyField(v, params.Fields)
-		if len(getField) == 0 {
-			continue
-		}
-
-		var list []map[string]string
-		where := make(map[string]interface{})
-		where["item_id"] = itemId
-		switch k {
-		case "base":
-			itemData := make(map[string]string)
-			itemData, err = serv.dao.GetItem(itemId, getField)
-			for k,v := range itemData {
-				item[k] = v
-			}
-		case "photos":
-			where["state"] = define.ItemPhotosStateNormal
-			list, err = serv.dao.GetItemPhotos(getField, where, "sort asc", 1, 20)
-			item["photos"] = list
-		case "parameters":
-			where["state"] = define.ItemParametersStateNormal
-			list, err = serv.dao.GetItemParameters(getField, where, "sort asc", 1, 300)
-			item["parameters"] = list
-		case "skus":
-			where["state"] = skuState
-			list, err = serv.dao.GetItemSkus(getField, where, "", 1, 20)
-			item["skus"] = list
-		case "props":
-			var propData []model.ItemProps
-			propData, err = serv.getPropsData(itemId)
-			item["props"] = propData
-		}
-	}
-
+	item, err = serv.dao.GetItem(itemId, map[string]interface{}{"item_id": itemId})
 	return
 }
 
-func (serv *Service) getPropsData(itemId int) (propsData []model.ItemProps, err error) {
-	where := make(map[string]interface{})
-	where["item_id"] = itemId
-	where["state"] = define.ItemPropsStateNormal
-	propsData, err = serv.dao.GetItemProps(where, "sort asc", 1, 20)
-	if err != nil {
+func (serv *Service) GetItemByItemId(itemId int) (item model.Item, err error) {
+	valid := validation.Validation{}
+	valid.Min(itemId, 1, "item_id")
+	if valid.HasErrors() {
+		err = helper.GetEcodeValidParam(valid.Errors)
 		return
 	}
-	where["state"] = define.ItemPropsValuesStateNormal
-	for k,v := range propsData {
-		where["prop_name"] = v.PropName
-		var tmp []model.ItemPropValues
-		tmp, err = serv.dao.GetItemPropValues(where, "sort asc", 1, 20)
-		propsData[k].Values = append(v.Values, tmp...)
+	item = model.Item{
+		Items:      model.Items{},
+		Photos:     nil,
+		Parameters: nil,
+		Skus:       nil,
+		Props:      nil,
+	}
+	where := map[string]interface{}{
+		"item_id": item,
+	}
+	item.Items, err = serv.dao.GetItem(itemId, where)
+	where["state"] = item.Items.State
+	item.Skus, err = serv.dao.GetSkus(itemId, where)
+	where["state"] = define.ItemPhotosStateNormal
+	item.Photos, err = serv.dao.GetPhotos(itemId, where)
+	where["state"] = define.ItemParametersStateNormal
+	item.Parameters, err = serv.dao.GetParameters(itemId, where)
+	where["state"] = define.ItemPropsStateNormal
+	item.Props, err = serv.dao.GetProps(itemId, where)
+	if len(item.Props) > 0 {
+		for k, prop := range item.Props {
+			prop.Values, err = serv.dao.GetPropValues(itemId, where)
+			item.Props[k] = prop
+		}
 	}
 	return
 }

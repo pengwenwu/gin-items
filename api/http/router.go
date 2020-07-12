@@ -35,8 +35,10 @@ func InitRouter() *gin.Engine {
 	{
 		// 获取item列表
 		itemGroup.GET("/item", GetItemList)
-		// 获取单个item
-		itemGroup.GET("/item/:item_id", GetItemById)
+		// 获取单个item基础信息
+		itemGroup.GET("/item/base/:item_id", GetItemBaseByItemId)
+		// 获取item详情
+		itemGroup.GET("/item/:item_id", GetItemByItemId)
 		// 新增单个item
 		itemGroup.POST("/item", AddItem)
 	}
