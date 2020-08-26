@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"sync/atomic"
 
+	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 )
 
@@ -104,6 +105,10 @@ func String(e string) Code {
 func Cause(e error) Codes {
 	if e == nil {
 		return OK
+	}
+	// 增加空记录错误返回判断
+	if e == gorm.ErrRecordNotFound {
+		return RecordNotFound
 	}
 	ec, ok := errors.Cause(e).(Codes)
 	if ok {

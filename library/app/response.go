@@ -1,36 +1,53 @@
 package app
 
 import (
-
-	//"encoding/json"
-	"net/http"
-
-	//"github.com/astaxie/beego/validation"
-	"github.com/gin-gonic/gin"
-
 	"gin-items/library/ecode"
+	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
-type Gin struct {
-	C *gin.Context
+type BaseResponse struct {
+	State int `json:"state"`
+	Msg string `json:"msg"`
 }
 
-type Response struct {
-	State int         `json:"state"`
-	Msg  string      `json:"msg"`
+type Responser interface {
+	SetBaseInfo(error)
+}
+
+type ResponseData struct {
+	BaseResponse
 	Data interface{} `json:"data"`
 }
 
-func (g *Gin) Response(data interface{}, err error) {
-	code := http.StatusOK
-	bcode := ecode.Cause(err)
-	state := bcode.Code()
-	msg := bcode.Message()
+type ResponseList struct {
+	ResponseData
+	Total int `json:"total"'`
+}
 
-	g.C.JSON(code, Response{
-		State: state,
-		Msg: msg,
-		Data: data,
-	})
+func (resp *BaseResponse) SetBaseInfo(err error) {
+	bcode := ecode.Cause(err)
+	resp.State = bcode.Code()
+	resp.Msg = bcode.Message()
+}
+
+func (resp *ResponseData) SetBaseInfo(err error) {
+	bcode := ecode.Cause(err)
+	resp.State = bcode.Code()
+	resp.Msg = bcode.Message()
+}
+
+func (resp *ResponseList) SetBaseInfo(err error) {
+	bcode := ecode.Cause(err)
+	resp.State = bcode.Code()
+	resp.Msg = bcode.Message()
+}
+
+func Response(c *gin.Context, resp Responser, err error)  {
+	if resp == nil {
+		resp = &BaseResponse{}
+	}
+	resp.SetBaseInfo(err)
+	c.JSON(http.StatusOK, resp)
 	return
 }

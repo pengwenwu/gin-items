@@ -27,16 +27,12 @@ type WhereIn struct {
 	ItemId []int `json:"item_id"`
 }
 
-type ArgGetItemById struct {
-	Fields string `json:"fields"`
-}
-
 // Validate .
-func (a ArgItemSearch) Validate() bool {
+func (a *ArgItemSearch) Validate() bool {
 	return true
 }
 
-func (a ArgItemSearch) GetWhereMap() (whereMap map[string]interface{}) {
+func (a *ArgItemSearch) GetWhereMap() (whereMap map[string]interface{}) {
 	whereMap = make(map[string]interface{})
 	whereMap["item_state"] = a.ItemState
 	whereMap["sku_state"] = a.SkuState

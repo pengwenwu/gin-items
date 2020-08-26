@@ -10,6 +10,8 @@ var (
 
 	IllegalParams    = add(-201) // 参数非法
 
+	RecordNotFound = add(-301) // 未查询到记录
+
 	RequestErr = add(-400) // 请求错误
 	ServerErr  = add(-500) // 服务器错误
 

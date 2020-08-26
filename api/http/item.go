@@ -12,92 +12,93 @@ import (
 	"gin-items/model"
 )
 
+type pageData struct {
+	Data  interface{} `json:"data"`
+	Total int         `json:"total"`
+}
+
 //获取商品列表
 func GetItemList(c *gin.Context) {
-	appGin := app.Gin{C: c}
-
-	argItemSearch := model.ArgItemSearch{
+	argItemSearch := &model.ArgItemSearch{
 		ItemState: define.ItemStateNormal,
-		SkuState: define.ItemSkuStateNormal,
-		Page:     setting.Config().APP.Page,
-		PageSize: setting.Config().APP.PageSize,
-		Order:    "item_id desc",
-		GroupBy: "item_id",
+		SkuState:  define.ItemSkuStateNormal,
+		Page:      setting.Config().APP.Page,
+		PageSize:  setting.Config().APP.PageSize,
+		Order:     "item_id desc",
+		GroupBy:   "item_id",
 	}
 
 	if bindErr := c.BindJSON(&argItemSearch); bindErr != nil {
 		err := helper.GetEcodeBindJson(bindErr)
-		appGin.Response(nil, err)
+		app.Response(c, nil, err)
 		return
 	}
 
 	list, total, err := serv.GetItemList(argItemSearch)
-	type pageData struct {
-		Data  map[int]interface{} `json:"data"`
-		Total int `json:"total"`
-	}
-	data := pageData{list, total}
-	appGin.Response(data, err)
+	resp := &app.ResponseList{}
+	resp.Data = list
+	resp.Total = total
+	app.Response(c, resp, err)
 	return
 }
 
 // 获取item基础数据
 func GetItemBaseByItemId(c *gin.Context) {
-	appGin := app.Gin{C: c}
 	itemId := com.StrTo(c.Param("item_id")).MustInt()
 
 	item, err := serv.GetItemBaseByItemId(itemId)
 	if err != nil {
-		appGin.Response(nil, err)
+		app.Response(c, nil, err)
 		return
 	}
-	appGin.Response(item, nil)
+	resp := &app.ResponseData{Data: item}
+	app.Response(c, resp, nil)
 	return
 }
 
 func GetItemByItemId(c *gin.Context) {
-	appGin := app.Gin{C: c}
-
 	itemId := com.StrTo(c.Param("item_id")).MustInt()
-	argGetItemById := model.ArgGetItemById{}
-	if bindErr := c.BindJSON(&argGetItemById);bindErr != nil{
-		err := helper.GetEcodeBindJson(bindErr)
-		appGin.Response(nil, err)
-		return
-	}
+	//argGetItemById := model.ArgGetItemById{}
+	//if bindErr := c.BindJSON(&argGetItemById);bindErr != nil{
+	//	err := helper.GetEcodeBindJson(bindErr)
+	//	appGin.Response(nil, err)
+	//	return
+	//}
 
 	item, err := serv.GetItemByItemId(itemId)
+
 	if err != nil {
-		appGin.Response(nil, err)
+		app.Response(c, nil, err)
 		return
 	}
 
-	appGin.Response(item, nil)
+	resp := &app.ResponseData{Data:item}
+	app.Response(c, resp, nil)
 	return
 }
 
-func AddItem(c *gin.Context)  {
-	appGin := app.Gin{C: c}
-
+func AddItem(c *gin.Context) {
 	tokenData, _ := c.Keys["token_data"].(*token.MyCustomClaims)
 	item := model.Item{
 		Items: model.Items{
-			State:define.ItemStateNormal,
-			Appkey: tokenData.AppKey,
+			State:   define.ItemStateNormal,
+			Appkey:  tokenData.AppKey,
 			Channel: tokenData.Channel,
 		},
 	}
-	if bindErr := c.BindJSON(&item);bindErr != nil{
+
+	if bindErr := c.BindJSON(&item); bindErr != nil {
 		err := helper.GetEcodeBindJson(bindErr)
-		appGin.Response(nil, err)
+		app.Response(c, nil, err)
 		return
 	}
 
 	itemId, err := serv.Add(item)
 	if err != nil {
-		appGin.Response(nil, err)
+		app.Response(c, nil, err)
 		return
 	}
 
-	appGin.Response(itemId, nil)
+	resp := &app.ResponseData{Data:itemId}
+	app.Response(c, resp, nil)
 }

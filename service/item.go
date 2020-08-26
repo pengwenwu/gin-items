@@ -10,13 +10,13 @@ import (
 	"gin-items/model"
 )
 
-func (serv *Service) GetItemList(params model.ArgItemSearch) (itemList map[int]interface{}, total int, err error) {
-	valid := validation.Validation{}
-	valid.Required(params.Fields, "fields")
-	if valid.HasErrors() {
-		err = helper.GetEcodeValidParam(valid.Errors)
-		return
-	}
+func (serv *Service) GetItemList(params *model.ArgItemSearch) (itemList []model.Item, total int, err error) {
+	//valid := validation.Validation{}
+	//valid.Required(params.Fields, "fields")
+	//if valid.HasErrors() {
+	//	err = helper.GetEcodeValidParam(valid.Errors)
+	//	return
+	//}
 	//fields := params.Fields
 	whereMap := params.GetWhereMap()
 	like := params.Like
@@ -35,13 +35,12 @@ func (serv *Service) GetItemList(params model.ArgItemSearch) (itemList map[int]i
 		return
 	}
 	// 查询对应的商品详情
-	itemList = make(map[int]interface{})
 	for _,itemId := range itemIds {
 		item, err  := serv.GetItemByItemId(itemId)
 		if err != nil {
 			continue
 		}
-		itemList[itemId] = item
+		itemList = append(itemList, item)
 	}
 	return
 }
@@ -72,9 +71,12 @@ func (serv *Service) GetItemByItemId(itemId int) (item model.Item, err error) {
 		Props:      nil,
 	}
 	where := map[string]interface{}{
-		"item_id": item,
+		"item_id": itemId,
 	}
 	item.Items, err = serv.dao.GetItem(itemId, where)
+	if err != nil {
+		return
+	}
 	where["state"] = item.Items.State
 	item.Skus, err = serv.dao.GetSkus(itemId, where)
 	where["state"] = define.ItemPhotosStateNormal

@@ -1,9 +1,10 @@
 package dao
 
 import (
+	"github.com/pkg/errors"
+
 	"gin-items/library/ecode"
 	"gin-items/model"
-	"github.com/pkg/errors"
 )
 
 func (dao *Dao) GetSearchItemIds(fields string, where map[string]interface{}, whereIn model.WhereIn, like map[string]string, order, groupBy string, page, pageSize int) (itemIds []int, err error) {
@@ -50,9 +51,6 @@ func (dao *Dao) GetSearchItemTotal(fields string, where map[string]interface{}, 
 		}
 	}
 	err = query.Model(&model.ItemSearches{}).Count(&total).Error
-	if err != nil {
-		return
-	}
 	return
 }
 
@@ -60,7 +58,8 @@ func (dao *Dao) GetItem(itemId int, where map[string]interface{}) (item model.It
 	err = dao.MasterServiceItems.
 		Table(item.TableName()).
 		Where(where).
-		First(&item).Error
+		Limit(1).
+		Find(&item).Error
 	return
 }
 
@@ -68,7 +67,8 @@ func (dao *Dao) GetSku(skuId int, where map[string]interface{}) (sku model.ItemS
 	err = dao.MasterServiceItems.
 		Table(sku.TableName()).
 		Where(where).
-		First(&sku).Error
+		Limit(1).
+		Find(&sku).Error
 	return
 }
 

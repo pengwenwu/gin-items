@@ -13,9 +13,9 @@ type Items struct {
 	Appkey  string `gorm:"column:appkey" json:"appkey"`
 	Channel int    `gorm:"column:channel" json:"channel"`
 	Name    string `gorm:"column:name" json:"name"`
-	Photo   string `gorm:"column:photo" json:"photo,omitempty"`
-	Detail  string `gorm:"column:detail" json:"detail,omitempty"`
-	State   int    `gorm:"column:state" json:"state,omitempty"`
+	Photo   string `gorm:"column:photo" json:"photo"`
+	Detail  string `gorm:"column:detail" json:"detail"`
+	State   int    `gorm:"column:state" json:"state"`
 	Model
 }
 
@@ -94,10 +94,10 @@ type ItemSearches struct {
 
 type Item struct {
 	Items
-	Photos     []ItemPhotos `json:"photos,omitempty"`
-	Parameters []ItemParameters `json:"parameters,omitempty"`
-	Skus       []ItemSkus `json:"skus,omitempty"`
-	Props      []ItemProps `json:"props,omitempty"`
+	Photos     []ItemPhotos `json:"photos"`
+	Parameters []ItemParameters `json:"parameters"`
+	Skus       []ItemSkus `json:"skus"`
+	Props      []ItemProps `json:"props"`
 }
 
 func (Items) TableName() string {
