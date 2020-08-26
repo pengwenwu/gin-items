@@ -42,7 +42,7 @@ type ItemProps struct {
 	HavePhoto int    `gorm:"column:have_photo" json:"have_photo"`
 	PropDesc  string `gorm:"column:prop_desc" json:"prop_desc"`
 	State     int    `gorm:"column:state" json:"state"`
-	Values    []ItemPropValues `json:"values"`
+	Values    []*ItemPropValues `json:"values"`
 	Model
 }
 
@@ -93,11 +93,11 @@ type ItemSearches struct {
 }
 
 type Item struct {
-	Items
-	Photos     []ItemPhotos `json:"photos"`
-	Parameters []ItemParameters `json:"parameters"`
-	Skus       []ItemSkus `json:"skus"`
-	Props      []ItemProps `json:"props"`
+	*Items
+	Photos     []*ItemPhotos `json:"photos"`
+	Parameters []*ItemParameters `json:"parameters"`
+	Skus       []*ItemSkus `json:"skus"`
+	Props      []*ItemProps `json:"props"`
 }
 
 func (Items) TableName() string {

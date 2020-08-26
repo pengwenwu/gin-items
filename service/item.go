@@ -10,7 +10,7 @@ import (
 	"gin-items/model"
 )
 
-func (serv *Service) GetItemList(params *model.ArgItemSearch) (itemList []model.Item, total int, err error) {
+func (serv *Service) GetItemList(params *model.ArgItemSearch) (itemList []*model.Item, total int, err error) {
 	//valid := validation.Validation{}
 	//valid.Required(params.Fields, "fields")
 	//if valid.HasErrors() {
@@ -45,7 +45,7 @@ func (serv *Service) GetItemList(params *model.ArgItemSearch) (itemList []model.
 	return
 }
 
-func (serv *Service) GetItemBaseByItemId(itemId int) (item model.Items, err error) {
+func (serv *Service) GetItemBaseByItemId(itemId int) (item *model.Items, err error) {
 	valid := validation.Validation{}
 	valid.Min(itemId, 1, "item_id")
 	if valid.HasErrors() {
@@ -56,15 +56,15 @@ func (serv *Service) GetItemBaseByItemId(itemId int) (item model.Items, err erro
 	return
 }
 
-func (serv *Service) GetItemByItemId(itemId int) (item model.Item, err error) {
+func (serv *Service) GetItemByItemId(itemId int) (item *model.Item, err error) {
 	valid := validation.Validation{}
 	valid.Min(itemId, 1, "item_id")
 	if valid.HasErrors() {
 		err = helper.GetEcodeValidParam(valid.Errors)
 		return
 	}
-	item = model.Item{
-		Items:      model.Items{},
+	item = &model.Item{
+		Items:      &model.Items{},
 		Photos:     nil,
 		Parameters: nil,
 		Skus:       nil,
@@ -74,6 +74,7 @@ func (serv *Service) GetItemByItemId(itemId int) (item model.Item, err error) {
 		"item_id": itemId,
 	}
 	item.Items, err = serv.dao.GetItem(itemId, where)
+
 	if err != nil {
 		return
 	}
@@ -94,7 +95,7 @@ func (serv *Service) GetItemByItemId(itemId int) (item model.Item, err error) {
 	return
 }
 
-func (serv *Service) Add(item model.Item) (itemId int, err error) {
+func (serv *Service) Add(item *model.Item) (itemId int, err error) {
 	valid := validation.Validation{}
 	valid.Valid(&item)
 	if valid.HasErrors() {
@@ -107,7 +108,7 @@ func (serv *Service) Add(item model.Item) (itemId int, err error) {
 		for _, prop := range item.Props {
 			for _, propValue := range prop.Values {
 				propValue.PropName = prop.PropName
-				propValues = append(propValues, propValue)
+				propValues = append(propValues, *propValue)
 			}
 		}
 	}
@@ -142,7 +143,7 @@ func (serv *Service) Add(item model.Item) (itemId int, err error) {
 	}
 
 	if len(item.Skus) == 0 {
-		item.Skus = append(item.Skus, model.ItemSkus{
+		item.Skus = append(item.Skus, &model.ItemSkus{
 			Appkey:   item.Appkey,
 			Channel:  item.Channel,
 			ItemName: item.Name,
@@ -161,18 +162,19 @@ func (serv *Service) Add(item model.Item) (itemId int, err error) {
 	}
 	// 当没有轮播图的时候，选设置的第一张默认图
 	if len(item.Photos) == 0 {
-		item.Photos = append(item.Photos, model.ItemPhotos{
+		item.Photos = append(item.Photos, &model.ItemPhotos{
 			Photo:  item.Photo,
 		})
 	}
 
-	baseItems := model.Items{
+	baseItems := &model.Items{
 		ItemId:  0,
 		Appkey:  item.Appkey,
 		Channel: item.Channel,
 		Name:    item.Name,
 		Photo:   item.Photo,
 		Detail:  item.Detail,
+		State:   define.ItemStateNormal,
 		Model:   model.Model{},
 	}
 	itemId, err = serv.dao.InsertItem(baseItems)
@@ -188,7 +190,7 @@ func (serv *Service) Add(item model.Item) (itemId int, err error) {
 }
 
 // 添加sku
-func (serv *Service) addSkus(itemId int, skus []model.ItemSkus)  {
+func (serv *Service) addSkus(itemId int, skus []*model.ItemSkus)  {
 	for _, sku :=range skus {
 		sku.ItemId = itemId
 		serv.dao.InsertSku(sku)
@@ -197,7 +199,7 @@ func (serv *Service) addSkus(itemId int, skus []model.ItemSkus)  {
 }
 
 // 添加规格属性
-func (serv *Service) addProps(itemId int, props []model.ItemProps) {
+func (serv *Service) addProps(itemId int, props []*model.ItemProps) {
 	for _, prop := range props {
 		prop.ItemId = itemId
 		prop.State = define.ItemPropsStateNormal
@@ -213,7 +215,7 @@ func (serv *Service) addProps(itemId int, props []model.ItemProps) {
 	}
 }
 
-func (serv *Service) addPhotos(itemId int, photos []model.ItemPhotos) {
+func (serv *Service) addPhotos(itemId int, photos []*model.ItemPhotos) {
 	for _, photo := range photos {
 		photo.ItemId = itemId
 		photo.State = define.ItemPhotosStateNormal
@@ -222,7 +224,7 @@ func (serv *Service) addPhotos(itemId int, photos []model.ItemPhotos) {
 	}
 }
 
-func (serv *Service) addParameters(itemId int, parameters []model.ItemParameters) {
+func (serv *Service) addParameters(itemId int, parameters []*model.ItemParameters) {
 	for _, parameter := range parameters {
 		parameter.ItemId = itemId
 		parameter.State = define.ItemParametersStateNormal

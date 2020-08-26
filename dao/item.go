@@ -54,7 +54,8 @@ func (dao *Dao) GetSearchItemTotal(fields string, where map[string]interface{}, 
 	return
 }
 
-func (dao *Dao) GetItem(itemId int, where map[string]interface{}) (item model.Items, err error) {
+func (dao *Dao) GetItem(itemId int, where map[string]interface{}) (item *model.Items, err error) {
+	item = &model.Items{}
 	err = dao.MasterServiceItems.
 		Table(item.TableName()).
 		Where(where).
@@ -63,7 +64,8 @@ func (dao *Dao) GetItem(itemId int, where map[string]interface{}) (item model.It
 	return
 }
 
-func (dao *Dao) GetSku(skuId int, where map[string]interface{}) (sku model.ItemSkus, err error) {
+func (dao *Dao) GetSku(skuId int, where map[string]interface{}) (sku *model.ItemSkus, err error) {
+	sku = &model.ItemSkus{}
 	err = dao.MasterServiceItems.
 		Table(sku.TableName()).
 		Where(where).
@@ -72,7 +74,7 @@ func (dao *Dao) GetSku(skuId int, where map[string]interface{}) (sku model.ItemS
 	return
 }
 
-func (dao *Dao) GetSkus(itemId int, where map[string]interface{}) (skus []model.ItemSkus, err error) {
+func (dao *Dao) GetSkus(itemId int, where map[string]interface{}) (skus []*model.ItemSkus, err error) {
 	err = dao.MasterServiceItems.
 		Table(model.ItemSkus{}.TableName()).
 		Where(where).
@@ -80,7 +82,7 @@ func (dao *Dao) GetSkus(itemId int, where map[string]interface{}) (skus []model.
 	return
 }
 
-func (dao *Dao) GetPhotos(itemId int, where map[string]interface{}) (photos []model.ItemPhotos, err error) {
+func (dao *Dao) GetPhotos(itemId int, where map[string]interface{}) (photos []*model.ItemPhotos, err error) {
 	err = dao.MasterServiceItems.
 		Table(model.ItemPhotos{}.TableName()).
 		Where(where).
@@ -88,7 +90,7 @@ func (dao *Dao) GetPhotos(itemId int, where map[string]interface{}) (photos []mo
 	return
 }
 
-func (dao *Dao) GetParameters(itemId int, where map[string]interface{}) (parameters []model.ItemParameters, err error) {
+func (dao *Dao) GetParameters(itemId int, where map[string]interface{}) (parameters []*model.ItemParameters, err error) {
 	err = dao.MasterServiceItems.
 		Table(model.ItemParameters{}.TableName()).
 		Where(where).
@@ -96,7 +98,7 @@ func (dao *Dao) GetParameters(itemId int, where map[string]interface{}) (paramet
 	return
 }
 
-func (dao *Dao) GetProps(itemId int, where map[string]interface{}) (props []model.ItemProps, err error) {
+func (dao *Dao) GetProps(itemId int, where map[string]interface{}) (props []*model.ItemProps, err error) {
 	err = dao.MasterServiceItems.
 		Table(model.ItemProps{}.TableName()).
 		Where(where).
@@ -104,7 +106,7 @@ func (dao *Dao) GetProps(itemId int, where map[string]interface{}) (props []mode
 	return
 }
 
-func (dao *Dao) GetPropValues(itemId int, where map[string]interface{}) (propValues []model.ItemPropValues, err error) {
+func (dao *Dao) GetPropValues(itemId int, where map[string]interface{}) (propValues []*model.ItemPropValues, err error) {
 	err = dao.MasterServiceItems.
 		Table(model.ItemPropValues{}.TableName()).
 		Where(where).
@@ -112,7 +114,7 @@ func (dao *Dao) GetPropValues(itemId int, where map[string]interface{}) (propVal
 	return
 }
 
-func (dao *Dao) InsertItem(item model.Items) (itemId int, err error) {
+func (dao *Dao) InsertItem(item *model.Items) (itemId int, err error) {
 	dao.MasterServiceItems.Create(&item)
 	if item.ItemId == 0 {
 		err = ecode.InsertItemErr
@@ -122,7 +124,7 @@ func (dao *Dao) InsertItem(item model.Items) (itemId int, err error) {
 	return
 }
 
-func (dao *Dao) InsertSku(sku model.ItemSkus) (skuId int, err error) {
+func (dao *Dao) InsertSku(sku *model.ItemSkus) (skuId int, err error) {
 	dao.MasterServiceItems.Create(&sku)
 	if sku.SkuId == 0 {
 		err = ecode.InsertItemErr
@@ -132,7 +134,7 @@ func (dao *Dao) InsertSku(sku model.ItemSkus) (skuId int, err error) {
 	return
 }
 
-func (dao *Dao) InsertProp(prop model.ItemProps) (id int, err error) {
+func (dao *Dao) InsertProp(prop *model.ItemProps) (id int, err error) {
 	dao.MasterServiceItems.Create(&prop)
 	if prop.Id == 0 {
 		err = ecode.InsertPropErr
@@ -142,7 +144,7 @@ func (dao *Dao) InsertProp(prop model.ItemProps) (id int, err error) {
 	return
 }
 
-func (dao *Dao) InsertPropValue(propValue model.ItemPropValues) (id int, err error) {
+func (dao *Dao) InsertPropValue(propValue *model.ItemPropValues) (id int, err error) {
 	dao.MasterServiceItems.Create(&propValue)
 	if propValue.Id == 0 {
 		err = ecode.InsertPropValueErr
@@ -152,7 +154,7 @@ func (dao *Dao) InsertPropValue(propValue model.ItemPropValues) (id int, err err
 	return
 }
 
-func (dao *Dao) InsertPhoto(photo model.ItemPhotos) (id int, err error) {
+func (dao *Dao) InsertPhoto(photo *model.ItemPhotos) (id int, err error) {
 	dao.MasterServiceItems.Create(&photo)
 	if photo.Id == 0 {
 		err = ecode.InsertPhotoErr
@@ -162,7 +164,7 @@ func (dao *Dao) InsertPhoto(photo model.ItemPhotos) (id int, err error) {
 	return
 }
 
-func (dao *Dao) InsertParameter(parameter model.ItemParameters) (id int, err error) {
+func (dao *Dao) InsertParameter(parameter *model.ItemParameters) (id int, err error) {
 	dao.MasterServiceItems.Create(&parameter)
 	if parameter.Id == 0 {
 		err = ecode.InsertParameterErr

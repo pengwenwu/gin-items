@@ -12,11 +12,6 @@ import (
 	"gin-items/model"
 )
 
-type pageData struct {
-	Data  interface{} `json:"data"`
-	Total int         `json:"total"`
-}
-
 //获取商品列表
 func GetItemList(c *gin.Context) {
 	argItemSearch := &model.ArgItemSearch{
@@ -79,8 +74,8 @@ func GetItemByItemId(c *gin.Context) {
 
 func AddItem(c *gin.Context) {
 	tokenData, _ := c.Keys["token_data"].(*token.MyCustomClaims)
-	item := model.Item{
-		Items: model.Items{
+	item := &model.Item{
+		Items: &model.Items{
 			State:   define.ItemStateNormal,
 			Appkey:  tokenData.AppKey,
 			Channel: tokenData.Channel,
