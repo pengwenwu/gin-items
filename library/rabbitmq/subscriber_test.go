@@ -49,9 +49,9 @@ func TestSubscriber(t *testing.T) {
 	i := 0
 	for msg := range msgCh {
 		i++
-		if i%5 == 0 {
-			sub.CloseChan()
-		}
+		//if i%5 == 0 {
+		//	sub.CloseChan()
+		//}
 		t.Logf("Subscirber receive msg `%s`\n", string(msg.Body))
 		time.Sleep(time.Second)
 	}

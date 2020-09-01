@@ -14,8 +14,8 @@ type Publisher struct {
 	name          string
 	mq            *MQ                    // MQ实例
 	chPool        *sync.Pool             // channel pool 重复使用
-	pubMutex      sync.RWMutex          // publish数据锁
-	mutex         sync.RWMutex          // 读写锁
+	pubMutex      sync.RWMutex           // publish数据锁
+	mutex         sync.RWMutex           // 读写锁
 	ch            *amqp.Channel          // MQ会话channel
 	exchangeBinds []*ExchangeBinds       // MQ的Exchange与其绑定的queues
 	enableConfirm bool                   // 生产者confirm开关
@@ -141,7 +141,7 @@ func (p *Publisher) Publish(exchange, routeKey string, msg *PublisherMsg) error 
 	if st := p.State(); st != StateOpened {
 		return fmt.Errorf("MQ: Publisher unopened, now state is %d", p.state)
 	}
-	
+
 	pub := amqp.Publishing{
 		ContentType:     msg.ContentType,
 		ContentEncoding: msg.ContentEncoding,
@@ -150,12 +150,12 @@ func (p *Publisher) Publish(exchange, routeKey string, msg *PublisherMsg) error 
 		Timestamp:       msg.Timestamp,
 		Body:            msg.Body,
 	}
-	
+
 	// 非confirm模式
 	if p.enableConfirm == false {
 		return p.ch.Publish(exchange, routeKey, false, false, pub)
 	}
-	
+
 	// confirm模式
 	// 这里加锁保证消息发送顺序与接收ack的channel的编号一致
 	p.pubMutex.Lock()
@@ -166,7 +166,7 @@ func (p *Publisher) Publish(exchange, routeKey string, msg *PublisherMsg) error 
 	ch := p.chPool.Get().(chan bool)
 	p.confirm.Listen(ch)
 	p.pubMutex.Unlock()
-	
+
 	ack, ok := <-ch
 	p.chPool.Put(ch)
 	if !ack || !ok {
