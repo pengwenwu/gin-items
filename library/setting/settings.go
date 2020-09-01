@@ -11,16 +11,17 @@ import (
 )
 
 type appConfig struct {
-	RunMode string `mapstructure:"run_mode"`
-	APP     appInfo
-	Server  serverInfo
-	DB      multiDB `mapstructure:"database"`
-	Log		logInfo
+	RunMode  string `mapstructure:"run_mode"`
+	APP      appInfo
+	Server   serverInfo
+	DB       multiDB `mapstructure:"database"`
+	RabbitMq RabbitMq
+	Log      logInfo
 }
 
 type appInfo struct {
-	Page      int    `mapstructure:"page"`
-	PageSize  int    `mapstructure:"page_size"`
+	Page     int `mapstructure:"page"`
+	PageSize int `mapstructure:"page_size"`
 }
 
 type serverInfo struct {
@@ -31,7 +32,7 @@ type serverInfo struct {
 
 type multiDB struct {
 	Master multiMasterDB `mapstructure:"master"`
-	Slave multiSlaveDB `mapstructure:"slave"`
+	Slave  multiSlaveDB  `mapstructure:"slave"`
 }
 
 type multiMasterDB struct {
@@ -44,15 +45,23 @@ type multiSlaveDB struct {
 }
 
 type Database struct {
-	Type        string
-	User        string
-	PassWord    string
-	Host        string
-	Name        string
-	TablePrefix string
+	Type               string
+	User               string
+	PassWord           string
+	Host               string
+	Name               string
+	TablePrefix        string
 	NeedConnectionPool bool
 	MaxIdleConnections int
 	MaxOpenConnections int
+}
+
+type RabbitMq struct {
+	Host     string `mapstructure:"host"`
+	Port     int    `mapstructure:"port"`
+	User     string `mapstructure:"user"`
+	Password string `mapstructure:"password"`
+	Vhost    string `mapstructure:"vhost"`
 }
 
 type logInfo struct {
@@ -77,11 +86,11 @@ func Config() *appConfig {
 		if confName == "" {
 			confName = "development"
 		}
-		viper.SetConfigName(fmt.Sprintf("config.%s", confName))  // 指定配置文件名称（不需要带后缀）
-		viper.SetConfigType("toml")    // 指定配置文件类型
-		viper.AddConfigPath("./conf/") // 指定查找配置文件的路径（这里使用相对路径）
-		err := viper.ReadInConfig()    // 读取配置信息
-		if err != nil {                // 读取配置信息失败
+		viper.SetConfigName(fmt.Sprintf("config.%s", confName)) // 指定配置文件名称（不需要带后缀）
+		viper.SetConfigType("toml")                             // 指定配置文件类型
+		viper.AddConfigPath("./conf/")                          // 指定查找配置文件的路径（这里使用相对路径）
+		err := viper.ReadInConfig()                             // 读取配置信息
+		if err != nil { // 读取配置信息失败
 			panic(fmt.Errorf("Fatal error config file: %s \n", err))
 		}
 		err = viper.Unmarshal(&cfg)
