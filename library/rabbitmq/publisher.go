@@ -14,8 +14,8 @@ type Publisher struct {
 	name          string
 	mq            *MQ                    // MQ实例
 	chPool        *sync.Pool             // channel pool 重复使用
-	pubMutex      *sync.RWMutex          // publish数据锁
-	mutex         *sync.RWMutex          // 读写锁
+	pubMutex      sync.RWMutex          // publish数据锁
+	mutex         sync.RWMutex          // 读写锁
 	ch            *amqp.Channel          // MQ会话channel
 	exchangeBinds []*ExchangeBinds       // MQ的Exchange与其绑定的queues
 	enableConfirm bool                   // 生产者confirm开关
@@ -272,17 +272,13 @@ func applyExchangeBinds(ch *amqp.Channel, exchangeBinds []*ExchangeBinds) (err e
 }
 
 type confirmHelper struct {
-	mutex     *sync.RWMutex
+	mutex     sync.RWMutex
 	listeners map[uint64]chan<- bool
 	count     uint64
 }
 
 func newConfirmHelper() *confirmHelper {
-	h := &confirmHelper{
-		mutex:     nil,
-		listeners: nil,
-		count:     0,
-	}
+	h := &confirmHelper{}
 	return h.Reset()
 }
 

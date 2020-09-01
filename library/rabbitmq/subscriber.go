@@ -17,7 +17,7 @@ type Delivery struct {
 type Subscriber struct {
 	name          string
 	mq            *MQ              // MQ实例
-	mutex         *sync.RWMutex    // 读写锁
+	mutex         sync.RWMutex    // 读写锁
 	ch            *amqp.Channel    // MQ的会话channel
 	exchangeBinds []*ExchangeBinds // MQ的exchange与其绑定的queues
 	prefetch      int              // Qos prefetch
@@ -135,6 +135,20 @@ func (s *Subscriber) Open() error {
 	return nil
 }
 
+
+func (s *Subscriber) Close() {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	select {
+	case <-s.stopCh:
+		// had been closed
+	default:
+		close(s.stopCh)
+	}
+}
+
+// notifyErr 向上层抛出错误, 如果error为空表示执行完成.由上层负责关闭channel
 func (s *Subscriber) subscribe(opt *SubscribeOption, notifyErr chan<- error) {
 	for idx, eb := range s.exchangeBinds {
 		if eb == nil {
@@ -210,11 +224,4 @@ func (s *Subscriber) keepalive() {
 		}
 		log.Printf("[ERROR] MQ: Consumer(%s) try to recover channel over maxRetry(%d), so exit\n", s.name, maxRetry)
 	}
-}
-
-func (s *Subscriber) Close() {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	select {}
 }

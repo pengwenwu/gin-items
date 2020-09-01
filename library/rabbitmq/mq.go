@@ -30,8 +30,8 @@ type MQ struct {
 func NewMQ(url string) *MQ {
 	return &MQ{
 		url:         url,
-		mutex:       sync.RWMutex{},
 		publishers:  make([]*Publisher, 0, 1),
+		subscribers: make([]*Subscriber, 0, 1),
 		state:       StateClosed,
 	}
 }
