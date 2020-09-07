@@ -64,5 +64,5 @@ func (p *producer) Send(routeKey RouteKey, data []byte) bool {
 
 // 发送完毕手动关闭，这样不影响send多次发送数据
 func (p *producer) Close() {
-	p.conn.Close()
+	_ = p.conn.Close()
 }

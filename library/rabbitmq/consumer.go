@@ -42,7 +42,7 @@ func NewConsumer() (*consumer, error) {
 
 func (c *consumer) Received(queueBind *queueBind, callbackFuncDealMsg func(receivedData []byte)) {
 	defer func() {
-		c.conn.Close()
+		_ = c.conn.Close()
 	}()
 
 	// 将回调函数地址赋值给结构体变量，用于掉线重连使用
@@ -76,6 +76,7 @@ func (c *consumer) Received(queueBind *queueBind, callbackFuncDealMsg func(recei
 			false,
 			nil,
 		)
+		c.occurErr = dealError(err)
 
 		// 队列绑定
 		for _, routeKey := range c.queueBind.keys {

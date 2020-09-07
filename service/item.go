@@ -98,7 +98,7 @@ func (serv *Service) GetItemByItemId(itemId int) (item *model.Item, err error) {
 
 func (serv *Service) Add(item *model.Item) (itemId int, err error) {
 	valid := validation.Validation{}
-	valid.Valid(&item)
+	_, _ = valid.Valid(&item)
 	if valid.HasErrors() {
 		err = helper.GetEcodeValidParam(valid.Errors)
 		return
@@ -194,7 +194,7 @@ func (serv *Service) Add(item *model.Item) (itemId int, err error) {
 func (serv *Service) addSkus(itemId int, skus []*model.ItemSkus) {
 	for _, sku := range skus {
 		sku.ItemId = itemId
-		serv.dao.InsertSku(sku)
+		_ = serv.dao.InsertSku(sku)
 		// todo: 报警校验失败
 		pub, _ := rabbitmq.NewProducer()
 		pubData, _ := rabbitmq.MqPack(&rabbitmq.SyncSkuInsertData{
@@ -210,13 +210,13 @@ func (serv *Service) addProps(itemId int, props []*model.ItemProps) {
 	for _, prop := range props {
 		prop.ItemId = itemId
 		prop.State = define.ItemPropsStateNormal
-		serv.dao.InsertProp(prop)
+		_ = serv.dao.InsertProp(prop)
 		// todo: 报警校验
 		for _, propValue := range prop.Values {
 			propValue.ItemId = itemId
 			propValue.PropName = prop.PropName
 			propValue.State = define.ItemPropsValuesStateNormal
-			serv.dao.InsertPropValue(propValue)
+			_ = serv.dao.InsertPropValue(propValue)
 			// todo：报警校验
 		}
 	}
@@ -226,7 +226,7 @@ func (serv *Service) addPhotos(itemId int, photos []*model.ItemPhotos) {
 	for _, photo := range photos {
 		photo.ItemId = itemId
 		photo.State = define.ItemPhotosStateNormal
-		serv.dao.InsertPhoto(photo)
+		_ = serv.dao.InsertPhoto(photo)
 		// todo: 报警校验
 	}
 }
@@ -265,7 +265,7 @@ func (serv *Service) SyncSkuInsert(recvData *rabbitmq.SyncSkuInsertData) {
 	itemSearch.BarCode = skuData.BarCode
 	itemSearch.SkuState = skuData.State
 
-	serv.dao.InsertSearches(itemSearch)
+	_ = serv.dao.InsertSearches(itemSearch)
 	// todo 错误处理
 	return
 }

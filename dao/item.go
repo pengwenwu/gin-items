@@ -124,62 +124,56 @@ func (dao *Dao) InsertItem(item *model.Items) (itemId int, err error) {
 	return
 }
 
-func (dao *Dao) InsertSku(sku *model.ItemSkus) (skuId int, err error) {
+func (dao *Dao) InsertSku(sku *model.ItemSkus) error {
 	dao.MasterServiceItems.Create(&sku)
 	if sku.SkuId == 0 {
-		err = ecode.InsertItemErr
-		return
+		err := ecode.InsertItemErr
+		return err
 	}
-	skuId = sku.SkuId
-	return
+	return nil
 }
 
-func (dao *Dao) InsertProp(prop *model.ItemProps) (id int, err error) {
+func (dao *Dao) InsertProp(prop *model.ItemProps) error {
 	dao.MasterServiceItems.Create(&prop)
 	if prop.Id == 0 {
-		err = ecode.InsertPropErr
-		return
+		err := ecode.InsertPropErr
+		return err
 	}
-	id = prop.Id
-	return
+	return nil
 }
 
-func (dao *Dao) InsertPropValue(propValue *model.ItemPropValues) (id int, err error) {
+func (dao *Dao) InsertPropValue(propValue *model.ItemPropValues) error {
 	dao.MasterServiceItems.Create(&propValue)
 	if propValue.Id == 0 {
-		err = ecode.InsertPropValueErr
-		return
+		err := ecode.InsertPropValueErr
+		return err
 	}
-	id = propValue.Id
-	return
+	return nil
 }
 
-func (dao *Dao) InsertPhoto(photo *model.ItemPhotos) (id int, err error) {
+func (dao *Dao) InsertPhoto(photo *model.ItemPhotos) error {
 	dao.MasterServiceItems.Create(&photo)
 	if photo.Id == 0 {
-		err = ecode.InsertPhotoErr
-		return
+		err := ecode.InsertPhotoErr
+		return err
 	}
-	id = photo.Id
-	return
+	return nil
 }
 
-func (dao *Dao) InsertParameter(parameter *model.ItemParameters) (id int, err error) {
+func (dao *Dao) InsertParameter(parameter *model.ItemParameters) error {
 	dao.MasterServiceItems.Create(&parameter)
 	if parameter.Id == 0 {
-		err = ecode.InsertParameterErr
-		return
+		err := ecode.InsertParameterErr
+		return err
 	}
-	id = parameter.Id
-	return
+	return nil
 }
 
-func (dao *Dao) InsertSearches(search *model.ItemSearches) (id int, err error) {
+func (dao *Dao) InsertSearches(search *model.ItemSearches) error {
 	dao.MasterServiceItems.Create(&search)
 	if search.Id == 0 {
-		err = ecode.InsertSearchErr
-		return
+		err := ecode.InsertSearchErr
+		return err
 	}
-	id = search.Id
-	return
+	return nil
 }

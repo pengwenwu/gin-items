@@ -2,10 +2,10 @@ package http
 
 import (
 	"fmt"
-	"gin-items/library/rabbitmq"
-	"github.com/gin-gonic/gin"
-	"os"
 
+	"github.com/gin-gonic/gin"
+
+	"gin-items/library/rabbitmq"
 	"gin-items/library/setting"
 	"gin-items/middleware/jwt"
 	"gin-items/middleware/log"
@@ -24,8 +24,8 @@ func InitRouter() *gin.Engine {
 
 	r := gin.New()
 	r.Use(
-		gin.Logger(), // Logger:控制台输出（线上环境可取消）
-		gin.Recovery(), // panic异常500处理
+		gin.Logger(),       // Logger:控制台输出（线上环境可取消）
+		gin.Recovery(),     // panic异常500处理
 		log.LoggerToFile(), // logrus日志
 	)
 	gin.SetMode(setting.Config().RunMode)
@@ -61,12 +61,11 @@ func initMqConsumer() {
 	go func() {
 		consumer, err := rabbitmq.NewConsumer()
 		if err != nil {
-			fmt.Errorf("启动mq消费者失败 %s\n", err.Error())
-			os.Exit(1)
+			panic(fmt.Errorf("启动mq消费者失败 %s\n", err.Error()))
 		}
 		consumer.Received(rabbitmq.SyncSkuInsert, func(receivedData []byte) {
 			data := &rabbitmq.SyncSkuInsertData{}
-			rabbitmq.MqUnpack(receivedData, data)
+			_ = rabbitmq.MqUnpack(receivedData, data)
 			serv.SyncSkuInsert(data)
 		})
 	}()
