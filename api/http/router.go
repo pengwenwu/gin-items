@@ -49,6 +49,8 @@ func InitRouter() *gin.Engine {
 		itemGroup.POST("", AddItem)
 		// 获取多个item
 		itemGroup.GET("/getByIds", GetItemByItemIds)
+		// 更新item
+		//itemGroup.PUT("/:item_id", UpdateItem)
 	}
 
 	return r

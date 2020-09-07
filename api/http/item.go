@@ -13,7 +13,7 @@ import (
 
 //获取商品列表
 func GetItemList(c *gin.Context) {
-	token := getToken(c)
+	tokenData := getTokenData(c)
 	argItemSearch := &model.ArgItemSearch{
 		ItemState: define.ItemStateNormal,
 		SkuState:  define.ItemSkuStateNormal,
@@ -29,7 +29,7 @@ func GetItemList(c *gin.Context) {
 		return
 	}
 
-	list, total, err := serv.GetItemList(argItemSearch, token)
+	list, total, err := serv.GetItemList(argItemSearch, tokenData)
 	resp := &app.ResponseList{}
 	resp.Data = list
 	resp.Total = total
@@ -39,10 +39,10 @@ func GetItemList(c *gin.Context) {
 
 // 获取item基础数据
 func GetItemBaseByItemId(c *gin.Context) {
-	token := getToken(c)
+	tokenData := getTokenData(c)
 	itemId := com.StrTo(c.Param("item_id")).MustInt()
 
-	item, err := serv.GetItemBaseByItemId(itemId, token)
+	item, err := serv.GetItemBaseByItemId(itemId, tokenData)
 	if err != nil {
 		app.Response(c, nil, err)
 		return
@@ -53,7 +53,7 @@ func GetItemBaseByItemId(c *gin.Context) {
 }
 
 func GetItemByItemId(c *gin.Context) {
-	token := getToken(c)
+	tokenData := getTokenData(c)
 	itemId := com.StrTo(c.Param("item_id")).MustInt()
 	//argGetItemById := model.ArgGetItemById{}
 	//if bindErr := c.BindJSON(&argGetItemById);bindErr != nil{
@@ -62,7 +62,7 @@ func GetItemByItemId(c *gin.Context) {
 	//	return
 	//}
 
-	item, err := serv.GetItemByItemId(itemId, token)
+	item, err := serv.GetItemByItemId(itemId, tokenData)
 
 	if err != nil {
 		app.Response(c, nil, err)
@@ -75,12 +75,12 @@ func GetItemByItemId(c *gin.Context) {
 }
 
 func AddItem(c *gin.Context) {
-	token := getToken(c)
+	tokenData := getTokenData(c)
 	item := &model.Item{
 		Items: &model.Items{
 			State:   define.ItemStateNormal,
-			Appkey:  token.AppKey,
-			Channel: token.Channel,
+			Appkey:  tokenData.AppKey,
+			Channel: tokenData.Channel,
 		},
 	}
 
@@ -101,7 +101,7 @@ func AddItem(c *gin.Context) {
 }
 
 func GetItemByItemIds(c *gin.Context) {
-	token := getToken(c)
+	tokenData := getTokenData(c)
 	params := new(struct {
 		ItemIds []int `json:"item_ids"`
 	})
@@ -111,7 +111,7 @@ func GetItemByItemIds(c *gin.Context) {
 		return
 	}
 
-	itemList, err := serv.GetItemByItemIds(params.ItemIds, token)
+	itemList, err := serv.GetItemByItemIds(params.ItemIds, tokenData)
 	if err != nil {
 		app.Response(c, nil, err)
 		return
@@ -121,7 +121,7 @@ func GetItemByItemIds(c *gin.Context) {
 	app.Response(c, resp, nil)
 }
 
-func getToken(c *gin.Context) *token.MyCustomClaims {
+func getTokenData(c *gin.Context) *token.MyCustomClaims {
 	tokenData, _ := c.Keys["token_data"].(*token.MyCustomClaims)
 	return tokenData
 }
