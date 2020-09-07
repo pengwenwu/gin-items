@@ -64,19 +64,10 @@ func initMqConsumer() {
 			fmt.Errorf("启动mq消费者失败 %s\n", err.Error())
 			os.Exit(1)
 		}
-		consumer.Received(rabbitmq.TradeOrderCreateNotice, func(receivedData string) {
-			fmt.Printf("queueName:Trade.orderCreateNotice, 接收消息内容：%s\n", receivedData)
-		})
-	}()
-
-	go func() {
-		consumer, err := rabbitmq.NewConsumer()
-		if err != nil {
-			fmt.Errorf("启动mq消费者失败 %s\n", err.Error())
-			os.Exit(1)
-		}
-		consumer.Received(rabbitmq.OrderUserRelCreateUpdate, func(receivedData string) {
-			fmt.Printf("queueName:Order.userRel.generate, 接收消息内容：%s\n", receivedData)
+		consumer.Received(rabbitmq.SyncSkuInsert, func(receivedData []byte) {
+			data := &rabbitmq.SyncSkuInsertData{}
+			rabbitmq.MqUnpack(receivedData, data)
+			serv.SyncSkuInsert(data)
 		})
 	}()
 }

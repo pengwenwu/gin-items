@@ -26,7 +26,7 @@ func NewProducer() (*producer, error) {
 	return producer, nil
 }
 
-func (p *producer) Send(routeKey RouteKey, data string) bool {
+func (p *producer) Send(routeKey RouteKey, data []byte) bool {
 	ch, err := p.conn.Channel()
 	p.occurErr = dealError(err)
 	defer ch.Close()
@@ -50,9 +50,9 @@ func (p *producer) Send(routeKey RouteKey, data string) bool {
 		false,
 		false,
 		amqp.Publishing{
-			ContentType:  "text/plain",
+			ContentType:  "application/json",
 			DeliveryMode: Persistent,
-			Body:         []byte(data),
+			Body:         data,
 		},
 	)
 	p.occurErr = dealError(err)

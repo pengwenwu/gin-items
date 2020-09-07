@@ -4,7 +4,6 @@ import (
 	"gin-items/helper"
 	"gin-items/library/app"
 	"gin-items/library/define"
-	"gin-items/library/rabbitmq"
 	"gin-items/library/setting"
 	"gin-items/library/token"
 	"gin-items/model"
@@ -39,8 +38,6 @@ func GetItemList(c *gin.Context) {
 
 // 获取item基础数据
 func GetItemBaseByItemId(c *gin.Context) {
-	pubMsg()
-
 	itemId := com.StrTo(c.Param("item_id")).MustInt()
 
 	item, err := serv.GetItemBaseByItemId(itemId)
@@ -98,12 +95,4 @@ func AddItem(c *gin.Context) {
 
 	resp := &app.ResponseData{Data:itemId}
 	app.Response(c, resp, nil)
-}
-
-func pubMsg()  {
-	producer, _ := rabbitmq.NewProducer()
-	producer.Send(rabbitmq.TradeCreate, "tradeCreate")
-	producer.Send(rabbitmq.TradeChange, "tradeChange")
-	producer.Close()
-	return
 }

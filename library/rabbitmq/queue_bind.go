@@ -6,12 +6,20 @@ type queueBind struct {
 }
 
 var (
-	OrderUserRelCreateUpdate = &queueBind{
-		name: "Order.userRel.generate",
-		keys: []RouteKey{TradeCreate, TradeChange},
+	SyncItemInsert = &queueBind{
+		name: "service_item.syncItemInsert",
+		keys: []RouteKey{ItemInsert},
 	}
-	TradeOrderCreateNotice = &queueBind{
-		name: "Trade.orderCreateNotice",
-		keys: []RouteKey{TradeCreate},
+	SyncItemUpdate = &queueBind{
+		name: "service_item.syncItemUpdate",
+		keys: []RouteKey{ItemUpdate},
+	}
+	SyncSkuInsert = &queueBind{
+		name: "service_item.syncSkuInsert",
+		keys: []RouteKey{SkuInsert},
+	}
+	SyncSkuUpdate = &queueBind{
+		name: "service_item.syncSkuUpdate",
+		keys: []RouteKey{SkuUpdate},
 	}
 )

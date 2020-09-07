@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+	"gin-items/library/rabbitmq"
 	"strings"
 
 	"github.com/astaxie/beego/validation"
@@ -20,7 +22,7 @@ func (serv *Service) GetItemList(params *model.ArgItemSearch) (itemList []*model
 	//fields := params.Fields
 	whereMap := params.GetWhereMap()
 	like := params.Like
-	for k,v := range like {
+	for k, v := range like {
 		if k == "name" {
 			like["sku_name"] = v
 			delete(like, k)
@@ -35,8 +37,8 @@ func (serv *Service) GetItemList(params *model.ArgItemSearch) (itemList []*model
 		return
 	}
 	// 查询对应的商品详情
-	for _,itemId := range itemIds {
-		item, err  := serv.GetItemByItemId(itemId)
+	for _, itemId := range itemIds {
+		item, err := serv.GetItemByItemId(itemId)
 		if err != nil {
 			continue
 		}
@@ -163,7 +165,7 @@ func (serv *Service) Add(item *model.Item) (itemId int, err error) {
 	// 当没有轮播图的时候，选设置的第一张默认图
 	if len(item.Photos) == 0 {
 		item.Photos = append(item.Photos, &model.ItemPhotos{
-			Photo:  item.Photo,
+			Photo: item.Photo,
 		})
 	}
 
@@ -190,11 +192,17 @@ func (serv *Service) Add(item *model.Item) (itemId int, err error) {
 }
 
 // 添加sku
-func (serv *Service) addSkus(itemId int, skus []*model.ItemSkus)  {
-	for _, sku :=range skus {
+func (serv *Service) addSkus(itemId int, skus []*model.ItemSkus) {
+	for _, sku := range skus {
 		sku.ItemId = itemId
 		serv.dao.InsertSku(sku)
 		// todo: 报警校验失败
+		pub, _ := rabbitmq.NewProducer()
+		pubData, _ := rabbitmq.MqPack(&rabbitmq.SyncSkuInsertData{
+			ItemId: itemId,
+			SkuId:  sku.SkuId,
+		})
+		pub.Send(rabbitmq.SkuInsert, pubData)
 	}
 }
 
@@ -233,3 +241,6 @@ func (serv *Service) addParameters(itemId int, parameters []*model.ItemParameter
 	}
 }
 
+func (serv *Service) SyncSkuInsert(recvData *rabbitmq.SyncSkuInsertData) {
+	fmt.Printf("%+v", recvData)
+}

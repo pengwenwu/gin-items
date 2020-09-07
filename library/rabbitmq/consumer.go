@@ -15,7 +15,7 @@ type consumer struct {
 	occurErr                    error // 记录初始化过程中的错误
 	connErr                     chan *amqp.Error
 	routeKey                    string                   // 断线重连，结构体内部使用
-	callbackForReceived         func(receiveData string) // 断线重连，结构体内部使用
+	callbackForReceived         func(receiveData []byte) // 断线重连，结构体内部使用
 	offlineReconnectIntervalSec time.Duration
 	retryTimes                  int
 	callbackOffline             func(err *amqp.Error)
@@ -40,7 +40,7 @@ func NewConsumer() (*consumer, error) {
 	return consumer, nil
 }
 
-func (c *consumer) Received(queueBind *queueBind, callbackFuncDealMsg func(receivedData string)) {
+func (c *consumer) Received(queueBind *queueBind, callbackFuncDealMsg func(receivedData []byte)) {
 	defer func() {
 		c.conn.Close()
 	}()
@@ -100,7 +100,7 @@ func (c *consumer) Received(queueBind *queueBind, callbackFuncDealMsg func(recei
 		)
 
 		for msg := range msgs {
-			callbackFuncDealMsg(string(msg.Body))
+			callbackFuncDealMsg(msg.Body)
 		}
 	}()
 

@@ -1,6 +1,7 @@
 package rabbitmq
 
 import (
+	"encoding/json"
 	"fmt"
 	"gin-items/library/setting"
 	"time"
@@ -38,5 +39,15 @@ func dealError(err error) error {
 	if err != nil {
 		//variable.ZapLog.Error(err.Error())
 	}
+	return err
+}
+
+func MqPack(data interface{}) ([]byte, error) {
+	bytes, err := json.Marshal(data)
+	return bytes, err
+}
+
+func MqUnpack(bytes []byte, data interface{}) error {
+	err := json.Unmarshal(bytes, data)
 	return err
 }
