@@ -1,6 +1,7 @@
 package service
 
 import (
+	"gin-items/library/token"
 	"strings"
 
 	"github.com/astaxie/beego/validation"
@@ -11,7 +12,7 @@ import (
 	"gin-items/model"
 )
 
-func (serv *Service) GetItemList(params *model.ArgItemSearch) (itemList []*model.Item, total int, err error) {
+func (serv *Service) GetItemList(params *model.ArgItemSearch, token *token.MyCustomClaims) (itemList []*model.Item, total int, err error) {
 	//valid := validation.Validation{}
 	//valid.Required(params.Fields, "fields")
 	//if valid.HasErrors() {
@@ -20,6 +21,8 @@ func (serv *Service) GetItemList(params *model.ArgItemSearch) (itemList []*model
 	//}
 	//fields := params.Fields
 	whereMap := params.GetWhereMap()
+	whereMap["appkey"] = token.AppKey
+	whereMap["channel"] = token.Channel
 	like := params.Like
 	for k, v := range like {
 		if k == "name" {
@@ -37,7 +40,7 @@ func (serv *Service) GetItemList(params *model.ArgItemSearch) (itemList []*model
 	}
 	// 查询对应的商品详情
 	for _, itemId := range itemIds {
-		item, err := serv.GetItemByItemId(itemId)
+		item, err := serv.GetItemByItemId(itemId, token)
 		if err != nil {
 			continue
 		}
@@ -46,18 +49,22 @@ func (serv *Service) GetItemList(params *model.ArgItemSearch) (itemList []*model
 	return
 }
 
-func (serv *Service) GetItemBaseByItemId(itemId int) (item *model.Items, err error) {
+func (serv *Service) GetItemBaseByItemId(itemId int, token *token.MyCustomClaims) (item *model.Items, err error) {
 	valid := validation.Validation{}
 	valid.Min(itemId, 1, "item_id")
 	if valid.HasErrors() {
 		err = helper.GetEcodeValidParam(valid.Errors)
 		return
 	}
-	item, err = serv.dao.GetItem(map[string]interface{}{"item_id": itemId})
+	item, err = serv.dao.GetItem(map[string]interface{}{
+		"item_id": itemId,
+		"appkey":  token.AppKey,
+		"channel": token.Channel,
+	})
 	return
 }
 
-func (serv *Service) GetItemByItemId(itemId int) (item *model.Item, err error) {
+func (serv *Service) GetItemByItemId(itemId int, token *token.MyCustomClaims) (item *model.Item, err error) {
 	valid := validation.Validation{}
 	valid.Min(itemId, 1, "item_id")
 	if valid.HasErrors() {
@@ -73,6 +80,8 @@ func (serv *Service) GetItemByItemId(itemId int) (item *model.Item, err error) {
 	}
 	where := map[string]interface{}{
 		"item_id": itemId,
+		"appkey":  token.AppKey,
+		"channel": token.Channel,
 	}
 	item.Items, err = serv.dao.GetItem(where)
 
@@ -81,6 +90,8 @@ func (serv *Service) GetItemByItemId(itemId int) (item *model.Item, err error) {
 	}
 	where["state"] = item.Items.State
 	item.Skus, err = serv.dao.GetSkus(where)
+	delete(where, "appkey")
+	delete(where, "channel")
 	where["state"] = define.ItemPhotosStateNormal
 	item.Photos, err = serv.dao.GetPhotos(where)
 	where["state"] = define.ItemParametersStateNormal
@@ -268,4 +279,23 @@ func (serv *Service) SyncSkuInsert(recvData *rabbitmq.SyncSkuInsertData) {
 	_ = serv.dao.InsertSearches(itemSearch)
 	// todo 错误处理
 	return
+}
+
+func (serv *Service) GetItemByItemIds(itemIds []int, token *token.MyCustomClaims) ([]*model.Item, error) {
+	valid := validation.Validation{}
+	valid.MinSize(itemIds, 1, "item_ids")
+	if valid.HasErrors() {
+		err := helper.GetEcodeValidParam(valid.Errors)
+		return nil, err
+	}
+
+	var itemList []*model.Item
+	for _, itemId := range itemIds {
+		itemDetail, err := serv.GetItemByItemId(itemId, token)
+		if err != nil {
+			continue
+		}
+		itemList = append(itemList, itemDetail)
+	}
+	return itemList, nil
 }

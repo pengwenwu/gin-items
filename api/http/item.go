@@ -13,6 +13,7 @@ import (
 
 //获取商品列表
 func GetItemList(c *gin.Context) {
+	token := getToken(c)
 	argItemSearch := &model.ArgItemSearch{
 		ItemState: define.ItemStateNormal,
 		SkuState:  define.ItemSkuStateNormal,
@@ -28,7 +29,7 @@ func GetItemList(c *gin.Context) {
 		return
 	}
 
-	list, total, err := serv.GetItemList(argItemSearch)
+	list, total, err := serv.GetItemList(argItemSearch, token)
 	resp := &app.ResponseList{}
 	resp.Data = list
 	resp.Total = total
@@ -38,9 +39,10 @@ func GetItemList(c *gin.Context) {
 
 // 获取item基础数据
 func GetItemBaseByItemId(c *gin.Context) {
+	token := getToken(c)
 	itemId := com.StrTo(c.Param("item_id")).MustInt()
 
-	item, err := serv.GetItemBaseByItemId(itemId)
+	item, err := serv.GetItemBaseByItemId(itemId, token)
 	if err != nil {
 		app.Response(c, nil, err)
 		return
@@ -51,6 +53,7 @@ func GetItemBaseByItemId(c *gin.Context) {
 }
 
 func GetItemByItemId(c *gin.Context) {
+	token := getToken(c)
 	itemId := com.StrTo(c.Param("item_id")).MustInt()
 	//argGetItemById := model.ArgGetItemById{}
 	//if bindErr := c.BindJSON(&argGetItemById);bindErr != nil{
@@ -59,25 +62,25 @@ func GetItemByItemId(c *gin.Context) {
 	//	return
 	//}
 
-	item, err := serv.GetItemByItemId(itemId)
+	item, err := serv.GetItemByItemId(itemId, token)
 
 	if err != nil {
 		app.Response(c, nil, err)
 		return
 	}
 
-	resp := &app.ResponseData{Data:item}
+	resp := &app.ResponseData{Data: item}
 	app.Response(c, resp, nil)
 	return
 }
 
 func AddItem(c *gin.Context) {
-	tokenData, _ := c.Keys["token_data"].(*token.MyCustomClaims)
+	token := getToken(c)
 	item := &model.Item{
 		Items: &model.Items{
 			State:   define.ItemStateNormal,
-			Appkey:  tokenData.AppKey,
-			Channel: tokenData.Channel,
+			Appkey:  token.AppKey,
+			Channel: token.Channel,
 		},
 	}
 
@@ -93,6 +96,32 @@ func AddItem(c *gin.Context) {
 		return
 	}
 
-	resp := &app.ResponseData{Data:itemId}
+	resp := &app.ResponseData{Data: itemId}
 	app.Response(c, resp, nil)
+}
+
+func GetItemByItemIds(c *gin.Context) {
+	token := getToken(c)
+	params := new(struct {
+		ItemIds []int `json:"item_ids"`
+	})
+	if bindErr := c.BindJSON(&params); bindErr != nil {
+		err := helper.GetEcodeBindJson(bindErr)
+		app.Response(c, nil, err)
+		return
+	}
+
+	itemList, err := serv.GetItemByItemIds(params.ItemIds, token)
+	if err != nil {
+		app.Response(c, nil, err)
+		return
+	}
+
+	resp := &app.ResponseData{Data: itemList}
+	app.Response(c, resp, nil)
+}
+
+func getToken(c *gin.Context) *token.MyCustomClaims {
+	tokenData, _ := c.Keys["token_data"].(*token.MyCustomClaims)
+	return tokenData
 }
