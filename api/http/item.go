@@ -1,11 +1,6 @@
 package http
 
 import (
-	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/unknwon/com"
-	"log"
-
 	"gin-items/helper"
 	"gin-items/library/app"
 	"gin-items/library/define"
@@ -13,6 +8,8 @@ import (
 	"gin-items/library/setting"
 	"gin-items/library/token"
 	"gin-items/model"
+	"github.com/gin-gonic/gin"
+	"github.com/unknwon/com"
 )
 
 //获取商品列表
@@ -104,51 +101,9 @@ func AddItem(c *gin.Context) {
 }
 
 func pubMsg()  {
-	var (
-		url = fmt.Sprintf("amqp://%s:%s@%s:%d/",
-			setting.Config().RabbitMq.User,
-			setting.Config().RabbitMq.Password,
-			setting.Config().RabbitMq.Host,
-			setting.Config().RabbitMq.Port)
-		exchangeName = "service"
-		exchangeKind = rabbitmq.ExchangeTopic
-		routeKey     = "service_item"
-		queueName    = "service.item"
-	)
-	mq, err := rabbitmq.NewMQ(url).Open()
-	if err != nil {
-		log.Printf("[ERROR] %s\n", err.Error())
-		return
-	}
-	exb := []*rabbitmq.ExchangeBinds{
-		&rabbitmq.ExchangeBinds{
-			Exch:     rabbitmq.NewExchange(exchangeName, exchangeKind),
-			Bindings: []*rabbitmq.Binding{
-				&rabbitmq.Binding{
-					RouteKey: routeKey,
-					Queues:   []*rabbitmq.Queue{
-						rabbitmq.NewQueue(queueName),
-					},
-				},
-			},
-		},
-	}
-
-	pub, err := mq.Publisher("pub")
-	if err != nil {
-		log.Printf("[ERROR] Create publisher failed, %v\n", err)
-		return
-	}
-	if err = pub.SetExchangeBinds(exb).Confirm(false).Open(); err != nil {
-		log.Printf("[ERROR] Open failed, %v\n", err)
-		return
-	}
-
-	msg := rabbitmq.NewPublishMsg([]byte(`{"name":"pww"}`))
-	err = pub.Publish(exchangeName, routeKey, msg)
-	if err != nil {
-		log.Printf("[ERROR] %s\n", err.Error())
-		return
-	}
+	producer, _ := rabbitmq.NewProducer()
+	producer.Send(rabbitmq.TradeCreate, "tradeCreate")
+	producer.Send(rabbitmq.TradeChange, "tradeChange")
+	producer.Close()
 	return
 }

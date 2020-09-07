@@ -1,6 +1,8 @@
 package rabbitmq
 
 import (
+	"fmt"
+	"gin-items/library/setting"
 	"time"
 
 	"github.com/streadway/amqp"
@@ -21,7 +23,11 @@ var (
 )
 
 var (
-	url                                    = "amqp://guest:guest@localhost:5672/"
+	url = fmt.Sprintf("amqp://%s:%s@%s:%d/",
+		setting.Config().RabbitMq.User,
+		setting.Config().RabbitMq.Password,
+		setting.Config().RabbitMq.Host,
+		setting.Config().RabbitMq.Port)
 	exchangeName                           = "service"
 	offLineReconnectInterval time.Duration = 10
 	retryTimes                             = 5

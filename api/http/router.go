@@ -1,7 +1,10 @@
 package http
 
 import (
+	"fmt"
+	"gin-items/library/rabbitmq"
 	"github.com/gin-gonic/gin"
+	"os"
 
 	"gin-items/library/setting"
 	"gin-items/middleware/jwt"
@@ -15,6 +18,9 @@ var (
 
 func InitRouter() *gin.Engine {
 	initService()
+
+	// 启动mq消费者
+	go initMqConsumer()
 
 	r := gin.New()
 	r.Use(
@@ -48,4 +54,29 @@ func InitRouter() *gin.Engine {
 
 func initService() {
 	serv = service.New()
+}
+
+func initMqConsumer() {
+	// 启动多个消费者
+	go func() {
+		consumer, err := rabbitmq.NewConsumer()
+		if err != nil {
+			fmt.Errorf("启动mq消费者失败 %s\n", err.Error())
+			os.Exit(1)
+		}
+		consumer.Received(rabbitmq.TradeOrderCreateNotice, func(receivedData string) {
+			fmt.Printf("queueName:Trade.orderCreateNotice, 接收消息内容：%s\n", receivedData)
+		})
+	}()
+
+	go func() {
+		consumer, err := rabbitmq.NewConsumer()
+		if err != nil {
+			fmt.Errorf("启动mq消费者失败 %s\n", err.Error())
+			os.Exit(1)
+		}
+		consumer.Received(rabbitmq.OrderUserRelCreateUpdate, func(receivedData string) {
+			fmt.Printf("queueName:Order.userRel.generate, 接收消息内容：%s\n", receivedData)
+		})
+	}()
 }
