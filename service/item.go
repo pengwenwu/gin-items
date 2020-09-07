@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"gin-items/library/token"
 	"strings"
 
@@ -108,8 +109,13 @@ func (serv *Service) GetItemByItemId(itemId int, tokenData *token.MyCustomClaims
 }
 
 func (serv *Service) Add(item *model.Item) (itemId int, err error) {
-	valid := validation.Validation{}
-	_, _ = valid.Valid(&item)
+	valid := &validation.Validation{}
+	valid.Required(item.Name, "name")
+	valid.Min(item.ItemId, 10, "item_id")
+	valid.Valid(&item)
+	fmt.Println(valid.HasErrors())
+	fmt.Println(valid.Errors)
+	return
 	if valid.HasErrors() {
 		err = helper.GetEcodeValidParam(valid.Errors)
 		return
@@ -246,7 +252,7 @@ func (serv *Service) addParameters(itemId int, parameters []*model.ItemParameter
 	for _, parameter := range parameters {
 		parameter.ItemId = itemId
 		parameter.State = define.ItemParametersStateNormal
-		serv.dao.InsertParameter(parameter)
+		_ = serv.dao.InsertParameter(parameter)
 		// todo: 报警校验
 	}
 }
@@ -298,4 +304,20 @@ func (serv *Service) GetItemByItemIds(itemIds []int, tokenData *token.MyCustomCl
 		itemList = append(itemList, itemDetail)
 	}
 	return itemList, nil
+}
+
+func (serv *Service) UpdateItem(item *model.Item, tokenData *token.MyCustomClaims) error {
+	valid := validation.Validation{}
+	valid.Min(item.ItemId, 1, "item_id")
+	if valid.HasErrors() {
+		err := helper.GetEcodeValidParam(valid.Errors)
+		return err
+	}
+
+	// 没有传photo但是传了photos
+	if item.Photo == "" && len(item.Photos) > 0 {
+		item.Photo = item.Photos[0].Photo
+	}
+
+	return nil
 }

@@ -50,7 +50,7 @@ func InitRouter() *gin.Engine {
 		// 获取多个item
 		itemGroup.GET("/getByIds", GetItemByItemIds)
 		// 更新item
-		//itemGroup.PUT("/:item_id", UpdateItem)
+		itemGroup.PUT("/:item_id", UpdateItem)
 	}
 
 	return r

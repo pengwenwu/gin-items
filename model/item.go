@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"reflect"
 	"time"
 
@@ -216,6 +217,7 @@ func (search *ItemSearches) BeforeUpdate(scope *gorm.Scope) error {
 }
 
 func (item *Item) Valid(v *validation.Validation) {
+	fmt.Println(1111111)
 	v.Required(item.Appkey, "appkey")
 	v.Required(item.Appkey, "channel")
 	v.Required(item.Name, "name")

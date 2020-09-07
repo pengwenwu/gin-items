@@ -125,3 +125,17 @@ func getTokenData(c *gin.Context) *token.MyCustomClaims {
 	tokenData, _ := c.Keys["token_data"].(*token.MyCustomClaims)
 	return tokenData
 }
+
+func UpdateItem(c *gin.Context) {
+	tokenData := getTokenData(c)
+	item := &model.Item{}
+
+	if bindErr := c.BindJSON(&item); bindErr != nil {
+		err := helper.GetEcodeBindJson(bindErr)
+		app.Response(c, nil, err)
+		return
+	}
+
+	err := serv.UpdateItem(item, tokenData)
+	app.Response(c, nil, err)
+}
