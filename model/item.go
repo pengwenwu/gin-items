@@ -205,6 +205,16 @@ func (parameter *ItemParameters) BeforeUpdate(scope *gorm.Scope) error {
 	return nil
 }
 
+func (search *ItemSearches) BeforeCreate(scope *gorm.Scope) error {
+	scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
+	scope.SetColumn("last_dated", "0000-00-00 00:00:00")
+	return nil
+}
+func (search *ItemSearches) BeforeUpdate(scope *gorm.Scope) error {
+	scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
+	return nil
+}
+
 func (item *Item) Valid(v *validation.Validation) {
 	v.Required(item.Appkey, "appkey")
 	v.Required(item.Appkey, "channel")

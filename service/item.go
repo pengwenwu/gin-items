@@ -1,14 +1,13 @@
 package service
 
 import (
-	"fmt"
-	"gin-items/library/rabbitmq"
 	"strings"
 
 	"github.com/astaxie/beego/validation"
 
 	"gin-items/helper"
 	"gin-items/library/define"
+	"gin-items/library/rabbitmq"
 	"gin-items/model"
 )
 
@@ -54,7 +53,7 @@ func (serv *Service) GetItemBaseByItemId(itemId int) (item *model.Items, err err
 		err = helper.GetEcodeValidParam(valid.Errors)
 		return
 	}
-	item, err = serv.dao.GetItem(itemId, map[string]interface{}{"item_id": itemId})
+	item, err = serv.dao.GetItem(map[string]interface{}{"item_id": itemId})
 	return
 }
 
@@ -75,22 +74,22 @@ func (serv *Service) GetItemByItemId(itemId int) (item *model.Item, err error) {
 	where := map[string]interface{}{
 		"item_id": itemId,
 	}
-	item.Items, err = serv.dao.GetItem(itemId, where)
+	item.Items, err = serv.dao.GetItem(where)
 
 	if err != nil {
 		return
 	}
 	where["state"] = item.Items.State
-	item.Skus, err = serv.dao.GetSkus(itemId, where)
+	item.Skus, err = serv.dao.GetSkus(where)
 	where["state"] = define.ItemPhotosStateNormal
-	item.Photos, err = serv.dao.GetPhotos(itemId, where)
+	item.Photos, err = serv.dao.GetPhotos(where)
 	where["state"] = define.ItemParametersStateNormal
-	item.Parameters, err = serv.dao.GetParameters(itemId, where)
+	item.Parameters, err = serv.dao.GetParameters(where)
 	where["state"] = define.ItemPropsStateNormal
-	item.Props, err = serv.dao.GetProps(itemId, where)
+	item.Props, err = serv.dao.GetProps(where)
 	if len(item.Props) > 0 {
 		for k, prop := range item.Props {
-			prop.Values, err = serv.dao.GetPropValues(itemId, where)
+			prop.Values, err = serv.dao.GetPropValues(where)
 			item.Props[k] = prop
 		}
 	}
@@ -242,5 +241,31 @@ func (serv *Service) addParameters(itemId int, parameters []*model.ItemParameter
 }
 
 func (serv *Service) SyncSkuInsert(recvData *rabbitmq.SyncSkuInsertData) {
-	fmt.Printf("%+v", recvData)
+	itemId := recvData.ItemId
+	skuId := recvData.SkuId
+	itemSearch := &model.ItemSearches{}
+	itemBase, err := serv.dao.GetItem(map[string]interface{}{"item_id": itemId})
+	if err != nil {
+		// todo: log记录
+		return
+	}
+	skuData, err := serv.dao.GetSku(map[string]interface{}{"sku_id": skuId})
+	if err != nil {
+		// todo: log记录
+		return
+	}
+
+	itemSearch.ItemId = itemBase.ItemId
+	itemSearch.Channel = itemBase.Channel
+	itemSearch.Appkey = itemBase.Appkey
+	itemSearch.ItemState = itemBase.State
+	itemSearch.SkuId = skuData.SkuId
+	itemSearch.SkuName = skuData.SkuName
+	itemSearch.SkuCode = skuData.SkuCode
+	itemSearch.BarCode = skuData.BarCode
+	itemSearch.SkuState = skuData.State
+
+	serv.dao.InsertSearches(itemSearch)
+	// todo 错误处理
+	return
 }

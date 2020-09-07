@@ -4,10 +4,11 @@ package ecode
 // item ecode interval is [1000, 1999]
 
 var (
-	InsertItemErr = New(1000) // 新增item失败
-	InsertSkuErr = New(1001) // 新增sku失败
-	InsertPropErr = New(1002) // 新增prop失败
+	InsertItemErr      = New(1000) // 新增item失败
+	InsertSkuErr       = New(1001) // 新增sku失败
+	InsertPropErr      = New(1002) // 新增prop失败
 	InsertPropValueErr = New(1003) // 新增propValue失败
-	InsertPhotoErr = New(1004) // 新增photo失败
+	InsertPhotoErr     = New(1004) // 新增photo失败
 	InsertParameterErr = New(1005) // 新增parameter失败
+	InsertSearchErr    = New(1006) // 新增search失败
 )
