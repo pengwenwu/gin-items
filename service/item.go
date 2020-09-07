@@ -301,8 +301,9 @@ func (serv *Service) GetItemByItemIds(itemIds []int, tokenData *token.MyCustomCl
 }
 
 func (serv *Service) UpdateItem(item *model.Item, tokenData *token.MyCustomClaims) error {
-	valid := validation.Validation{}
+	valid := &validation.Validation{}
 	valid.Min(item.ItemId, 1, "item_id")
+	item.Valid(valid)
 	if valid.HasErrors() {
 		err := helper.GetEcodeValidParam(valid.Errors)
 		return err
