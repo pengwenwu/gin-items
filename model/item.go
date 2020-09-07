@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"reflect"
 	"time"
 
@@ -147,77 +146,76 @@ func GetFields(i interface{}) (fields []string) {
 }
 
 func (items *Items) BeforeCreate(scope *gorm.Scope) error {
-	scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
-	scope.SetColumn("last_dated", "0000-00-00 00:00:00")
-	return nil
+	err := scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
+	err = scope.SetColumn("last_dated", "0000-00-00 00:00:00")
+	return err
 }
 func (items *Items) BeforeUpdate(scope *gorm.Scope) error {
-	scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
-	return nil
+	err := scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
+	return err
 }
 
 func (sku *ItemSkus) BeforeCreate(scope *gorm.Scope) error {
-	scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
-	scope.SetColumn("last_dated", "0000-00-00 00:00:00")
-	return nil
+	err := scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
+	err = scope.SetColumn("last_dated", "0000-00-00 00:00:00")
+	return err
 }
 func (sku *ItemSkus) BeforeUpdate(scope *gorm.Scope) error {
-	scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
-	return nil
+	err := scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
+	return err
 }
 
 func (prop *ItemProps) BeforeCreate(scope *gorm.Scope) error {
-	scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
-	scope.SetColumn("last_dated", "0000-00-00 00:00:00")
-	return nil
+	err := scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
+	err = scope.SetColumn("last_dated", "0000-00-00 00:00:00")
+	return err
 }
 func (prop *ItemProps) BeforeUpdate(scope *gorm.Scope) error {
-	scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
-	return nil
+	err := scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
+	return err
 }
 
 func (propValue *ItemPropValues) BeforeCreate(scope *gorm.Scope) error {
-	scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
-	scope.SetColumn("last_dated", "0000-00-00 00:00:00")
-	return nil
+	err := scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
+	err = scope.SetColumn("last_dated", "0000-00-00 00:00:00")
+	return err
 }
 func (propValue *ItemPropValues) BeforeUpdate(scope *gorm.Scope) error {
-	scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
-	return nil
+	err := scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
+	return err
 }
 
 func (photo *ItemPhotos) BeforeCreate(scope *gorm.Scope) error {
-	scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
-	scope.SetColumn("last_dated", "0000-00-00 00:00:00")
-	return nil
+	err := scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
+	err = scope.SetColumn("last_dated", "0000-00-00 00:00:00")
+	return err
 }
 func (photo *ItemPhotos) BeforeUpdate(scope *gorm.Scope) error {
-	scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
-	return nil
+	err := scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
+	return err
 }
 
 func (parameter *ItemParameters) BeforeCreate(scope *gorm.Scope) error {
-	scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
-	scope.SetColumn("last_dated", "0000-00-00 00:00:00")
-	return nil
+	err := scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
+	err = scope.SetColumn("last_dated", "0000-00-00 00:00:00")
+	return err
 }
 func (parameter *ItemParameters) BeforeUpdate(scope *gorm.Scope) error {
-	scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
-	return nil
+	err := scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
+	return err
 }
 
 func (search *ItemSearches) BeforeCreate(scope *gorm.Scope) error {
-	scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
-	scope.SetColumn("last_dated", "0000-00-00 00:00:00")
-	return nil
+	err := scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
+	err = scope.SetColumn("last_dated", "0000-00-00 00:00:00")
+	return err
 }
 func (search *ItemSearches) BeforeUpdate(scope *gorm.Scope) error {
-	scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
-	return nil
+	err := scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
+	return err
 }
 
 func (item *Item) Valid(v *validation.Validation) {
-	fmt.Println(1111111)
 	v.Required(item.Appkey, "appkey")
 	v.Required(item.Appkey, "channel")
 	v.Required(item.Name, "name")
@@ -237,7 +235,7 @@ func (item *Item) Valid(v *validation.Validation) {
 	if len(item.Skus) > 0 {
 		for _, sku := range item.Skus {
 			if sku.SkuName == "" && sku.Properties == "" {
-				v.SetError("skus.properties", "缺少sku_name")
+				_ = v.SetError("skus.properties", "缺少sku_name")
 			}
 		}
 	}

@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"gin-items/library/token"
 	"strings"
 
@@ -110,12 +109,7 @@ func (serv *Service) GetItemByItemId(itemId int, tokenData *token.MyCustomClaims
 
 func (serv *Service) Add(item *model.Item) (itemId int, err error) {
 	valid := &validation.Validation{}
-	valid.Required(item.Name, "name")
-	valid.Min(item.ItemId, 10, "item_id")
-	valid.Valid(&item)
-	fmt.Println(valid.HasErrors())
-	fmt.Println(valid.Errors)
-	return
+	item.Valid(valid)
 	if valid.HasErrors() {
 		err = helper.GetEcodeValidParam(valid.Errors)
 		return
