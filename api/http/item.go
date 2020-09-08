@@ -128,7 +128,14 @@ func getTokenData(c *gin.Context) *token.MyCustomClaims {
 
 func UpdateItem(c *gin.Context) {
 	tokenData := getTokenData(c)
-	item := &model.Item{}
+	itemId := com.StrTo(c.Param("item_id")).MustInt()
+	item := &model.Item{
+		Items: &model.Items{
+			ItemId:  itemId,
+			Appkey:  tokenData.AppKey,
+			Channel: tokenData.Channel,
+		},
+	}
 
 	if bindErr := c.BindJSON(&item); bindErr != nil {
 		err := helper.GetEcodeBindJson(bindErr)

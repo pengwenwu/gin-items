@@ -177,3 +177,14 @@ func (dao *Dao) InsertSearches(search *model.ItemSearches) error {
 	}
 	return nil
 }
+
+func (dao *Dao) UpdateItem(item *model.Items, where map[string]interface{}) error {
+	return dao.MasterServiceItems.
+		Model(&item).
+		Debug().
+		Select("name").
+		Where(where).
+		Limit(1).
+		Updates(&item).
+		Error
+}

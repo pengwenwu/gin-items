@@ -1,7 +1,9 @@
 package model
 
 import (
+	"gin-items/library/define"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/astaxie/beego/validation"
@@ -217,26 +219,50 @@ func (search *ItemSearches) BeforeUpdate(scope *gorm.Scope) error {
 
 func (item *Item) Valid(v *validation.Validation) {
 	v.Required(item.Appkey, "appkey")
-	v.Required(item.Appkey, "channel")
+	v.Required(item.Channel, "channel")
 	v.Required(item.Name, "name")
 
+	var propValues []*ItemPropValues
 	if len(item.Props) > 0 {
 		for _, prop := range item.Props {
 			v.Required(prop.PropName, "props.prop_name")
 			v.Required(prop.Values, "props.values")
-			if len(prop.Values) > 0 {
-				for _, propValues := range prop.Values {
-					v.Required(propValues.PropValueName, "props.values.prop_value_name")
-				}
+			for _, propValue := range prop.Values {
+				v.Required(propValue.PropValueName, "props.values.prop_value_name")
+				propValue.PropName = prop.PropName
+				propValues = append(propValues, propValue)
 			}
 		}
 	}
+
 
 	if len(item.Skus) > 0 {
 		for _, sku := range item.Skus {
 			if sku.SkuName == "" && sku.Properties == "" {
 				_ = v.SetError("skus.properties", "缺少sku_name")
 			}
+			skuName := item.Name
+			if sku.Properties != "" {
+				skuProps := strings.Split(sku.Properties, ";")
+				for _, v := range skuProps {
+					skuProp := strings.Split(v, ":")
+					skuName += " " + skuProp[1]
+
+					for _, propValue := range propValues {
+						if propValue.PropName == skuProp[0] && propValue.PropValueName == skuProp[1] && propValue.PropPhoto != "" {
+							sku.SkuPhoto = propValue.PropPhoto
+						}
+					}
+				}
+			}
+
+			if sku.SkuName == "" {
+				sku.SkuName = skuName
+			}
+			sku.Appkey = item.Appkey
+			sku.Channel = item.Channel
+			sku.ItemName = item.Name
+			sku.State = define.ItemSkuStateNormal
 		}
 	}
 
@@ -251,5 +277,20 @@ func (item *Item) Valid(v *validation.Validation) {
 			v.Required(parameter.Value, "parameters.parameters")
 			v.Required(parameter.Value, "parameters.value")
 		}
+	}
+
+	// 当主图没有时，轮播图第一张图设置为主图
+	if len(item.Photos) > 0 && item.Photo == "" {
+		item.Photo = item.Photos[0].Photo
+	}
+	// 当没有轮播图、主图的时候，设置默认图
+	if len(item.Photos) == 0 && item.Photo == "" {
+		item.Photo = define.ItemDefaultPhoto
+	}
+	// 当没有轮播图的时候，选设置的第一张默认图
+	if len(item.Photos) == 0 {
+		item.Photos = append(item.Photos, &ItemPhotos{
+			Photo: item.Photo,
+		})
 	}
 }

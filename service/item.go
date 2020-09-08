@@ -1,9 +1,8 @@
 package service
 
 import (
+	"fmt"
 	"gin-items/library/token"
-	"strings"
-
 	"github.com/astaxie/beego/validation"
 
 	"gin-items/helper"
@@ -115,45 +114,6 @@ func (serv *Service) Add(item *model.Item) (itemId int, err error) {
 		return
 	}
 
-	var propValues []model.ItemPropValues
-	if len(item.Props) > 0 {
-		for _, prop := range item.Props {
-			for _, propValue := range prop.Values {
-				propValue.PropName = prop.PropName
-				propValues = append(propValues, *propValue)
-			}
-		}
-	}
-
-	if len(item.Skus) > 0 {
-		for k, sku := range item.Skus {
-			skuName := item.Name
-			if sku.Properties != "" {
-				skuProps := strings.Split(sku.Properties, ";")
-				for _, v := range skuProps {
-					skuProp := strings.Split(v, ":")
-					skuName += " " + skuProp[1]
-
-					for _, propValue := range propValues {
-						if propValue.PropName == skuProp[0] && propValue.PropValueName == skuProp[1] && propValue.PropPhoto != "" {
-							sku.SkuPhoto = propValue.PropPhoto
-						}
-					}
-				}
-			}
-
-			if sku.SkuName == "" {
-				sku.SkuName = skuName
-			}
-			sku.Appkey = item.Appkey
-			sku.Channel = item.Channel
-			sku.ItemName = item.Name
-			sku.State = define.ItemSkuStateNormal
-
-			item.Skus[k] = sku
-		}
-	}
-
 	if len(item.Skus) == 0 {
 		item.Skus = append(item.Skus, &model.ItemSkus{
 			Appkey:   item.Appkey,
@@ -162,20 +122,6 @@ func (serv *Service) Add(item *model.Item) (itemId int, err error) {
 			SkuName:  item.Name,
 			SkuPhoto: item.Photo,
 			State:    define.ItemSkuStateNormal,
-		})
-	}
-	// 当主图没有时，轮播图第一张图设置为主图
-	if len(item.Photos) > 0 && item.Photo == "" {
-		item.Photo = item.Photos[0].Photo
-	}
-	// 当没有轮播图、主图的时候，设置默认图
-	if len(item.Photos) == 0 && item.Photo == "" {
-		item.Photo = define.ItemDefaultPhoto
-	}
-	// 当没有轮播图的时候，选设置的第一张默认图
-	if len(item.Photos) == 0 {
-		item.Photos = append(item.Photos, &model.ItemPhotos{
-			Photo: item.Photo,
 		})
 	}
 
@@ -187,7 +133,6 @@ func (serv *Service) Add(item *model.Item) (itemId int, err error) {
 		Photo:   item.Photo,
 		Detail:  item.Detail,
 		State:   define.ItemStateNormal,
-		Model:   model.Model{},
 	}
 	itemId, err = serv.dao.InsertItem(baseItems)
 	if err != nil {
@@ -309,10 +254,9 @@ func (serv *Service) UpdateItem(item *model.Item, tokenData *token.MyCustomClaim
 		return err
 	}
 
-	// 没有传photo但是传了photos
-	if item.Photo == "" && len(item.Photos) > 0 {
-		item.Photo = item.Photos[0].Photo
-	}
+	fmt.Printf("%+v", item.Items)
+	err := serv.dao.UpdateItem(item.Items, map[string]interface{}{"item_id": item.ItemId, "appkey": item.Appkey, "channel": item.Channel})
+	fmt.Println(err)
 
 	return nil
 }
