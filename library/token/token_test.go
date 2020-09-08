@@ -38,7 +38,7 @@ func Test_token_Encode(t1 *testing.T) {
 				extra   EncodeExtraData
 			}{
 				appKey:  "900ffe093ae07a09a99525baac3cfe53",
-				channel: 0,
+				channel: 100,
 				secret:  "45f25874aa6dd33427dee744f2a800e6",
 				extra: EncodeExtraData{
 					LoginUserId: 1535917,
