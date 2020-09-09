@@ -51,6 +51,8 @@ func InitRouter() *gin.Engine {
 		itemGroup.GET("/getByIds", GetItemByItemIds)
 		// 更新item
 		itemGroup.PUT("/:item_id", UpdateItem)
+		// 删除item
+		itemGroup.DELETE("/:item_id", DeleteItem)
 	}
 
 	return r
@@ -80,6 +82,18 @@ func initMqConsumer() {
 			panic(fmt.Errorf("启动mq消费者失败 %s\n", err.Error()))
 		}
 		consumer.Received(rabbitmq.SyncSkuUpdate, func(receivedData []byte) {
+			data := &rabbitmq.SyncSkuUpdateData{}
+			_ = rabbitmq.MqUnpack(receivedData, data)
+			serv.SyncSkuUpdate(data)
+		})
+	}()
+
+	go func() {
+		consumer, err := rabbitmq.NewConsumer()
+		if err != nil {
+			panic(fmt.Errorf("启动mq消费者失败 %s\n", err.Error()))
+		}
+		consumer.Received(rabbitmq.SyncItemSearches, func(receivedData []byte) {
 			data := &rabbitmq.SyncSkuUpdateData{}
 			_ = rabbitmq.MqUnpack(receivedData, data)
 			serv.SyncSkuUpdate(data)

@@ -146,3 +146,20 @@ func UpdateItem(c *gin.Context) {
 	err := serv.UpdateItem(item, tokenData)
 	app.Response(c, nil, err)
 }
+
+func DeleteItem(c *gin.Context)  {
+	tokenData := getTokenData(c)
+	itemId := com.StrTo(c.Param("item_id")).MustInt()
+	params := new(struct {
+		IsFinalDelete bool `json:"is_final_delete"`
+	})
+	if bindErr := c.BindJSON(&params); bindErr != nil {
+		err := helper.GetEcodeBindJson(bindErr)
+		app.Response(c, nil, err)
+		return
+	}
+
+	err := serv.DeleteItem(itemId, params.IsFinalDelete, tokenData)
+	app.Response(c, nil, err)
+	return
+}

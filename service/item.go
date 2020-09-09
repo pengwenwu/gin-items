@@ -344,3 +344,40 @@ func (serv *Service) SyncSkuUpdate(recvData *rabbitmq.SyncSkuUpdateData) {
 	// todo 错误处理
 	return
 }
+
+func (serv *Service) DeleteItem(itemId int, isFinalDelete bool, tokenData *token.MyCustomClaims) error {
+	valid := validation.Validation{}
+	valid.Min(itemId, 1, "item_id")
+	if valid.HasErrors() {
+		err := helper.GetEcodeValidParam(valid.Errors)
+		return err
+	}
+
+	where := map[string]interface{}{
+		"item_id": itemId,
+		"appkey":  tokenData.AppKey,
+		"channel": tokenData.Channel,
+	}
+	update := make(map[string]interface{})
+	if isFinalDelete {
+		update["state"] = define.ItemStateDeletedReal
+	} else {
+		update["state"] = define.ItemStateDeleted
+	}
+	err := serv.dao.UpdateItem(where, update)
+	if err != nil {
+		return err
+	}
+	err = serv.dao.UpdateSkus(where, update)
+	if err != nil {
+		return err
+	}
+	// 发布商品更新消息
+	pub, _ := rabbitmq.NewProducer()
+	pubData, _ := rabbitmq.MqPack(&rabbitmq.SyncItemSearchesData{
+		ItemId: itemId,
+	})
+	pub.Send(rabbitmq.SyncItemSearches, pubData)
+
+	return nil
+}
