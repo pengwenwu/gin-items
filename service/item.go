@@ -1,7 +1,7 @@
 package service
 
 import (
-	"fmt"
+	"gin-items/library/ecode"
 	"gin-items/library/token"
 	"github.com/astaxie/beego/validation"
 
@@ -254,9 +254,93 @@ func (serv *Service) UpdateItem(item *model.Item, tokenData *token.MyCustomClaim
 		return err
 	}
 
-	fmt.Printf("%+v", item.Items)
-	err := serv.dao.UpdateItem(item.Items, map[string]interface{}{"item_id": item.ItemId, "appkey": item.Appkey, "channel": item.Channel})
-	fmt.Println(err)
+	where := map[string]interface{}{
+		"item_id": item.ItemId,
+		"appkey":  item.Appkey,
+		"channel": item.Channel,
+	}
+	updateData := map[string]interface{}{
+		"name":   item.Name,
+		"photo":  item.Photo,
+		"detail": item.Detail,
+	}
+	err := serv.dao.UpdateItem(where, updateData)
+	if err != nil {
+		err = ecode.UpdateItemErr
+		return err
+	}
+
+	_ = serv.dao.UpdateSkus(where, map[string]interface{}{"state": define.ItemSkuStateDeletedSelf})
+	var newSku []*model.ItemSkus
+	for _, sku := range item.Skus {
+		if sku.SkuId > 0 {
+			updateData = map[string]interface{}{
+				"item_name":  sku.ItemName,
+				"sku_name":   sku.SkuName,
+				"sku_photo":  sku.SkuPhoto,
+				"sku_code":   sku.SkuCode,
+				"bar_code":   sku.BarCode,
+				"properties": sku.Properties,
+				"state":      define.ItemSkuStateNormal,
+			}
+			_ = serv.dao.UpdateSku(sku, where, updateData)
+			// todo: 连接费时，待优化
+			pub, _ := rabbitmq.NewProducer()
+			pubData, _ := rabbitmq.MqPack(&rabbitmq.SyncSkuUpdateData{
+				ItemId: item.ItemId,
+				SkuId:  sku.SkuId,
+			})
+			pub.Send(rabbitmq.SkuUpdate, pubData)
+		} else {
+			newSku = append(newSku, sku)
+		}
+	}
+	if len(newSku) > 0 {
+		serv.addSkus(item.ItemId, newSku)
+	}
+
+	_ = serv.dao.DeleteProps(item.ItemId)
+	_ = serv.dao.DeletePropValues(item.ItemId)
+	serv.addProps(item.ItemId, item.Props)
+
+	_ = serv.dao.DeletePhotos(item.ItemId)
+	serv.addPhotos(item.ItemId, item.Photos)
+
+	_ = serv.dao.DeleteParameters(item.ItemId)
+	serv.addParameters(item.ItemId, item.Parameters)
 
 	return nil
+}
+
+func (serv *Service) SyncSkuUpdate(recvData *rabbitmq.SyncSkuUpdateData) {
+	itemId := recvData.ItemId
+	skuId := recvData.SkuId
+	itemBase, err := serv.dao.GetItem(map[string]interface{}{"item_id": itemId})
+	if err != nil {
+		// todo: log记录
+		return
+	}
+	skuData, err := serv.dao.GetSku(map[string]interface{}{"sku_id": skuId})
+	if err != nil {
+		// todo: log记录
+		return
+	}
+
+	where := map[string]interface{}{
+		"item_id": itemId,
+		"sku_id":  skuId,
+		"appkey":  itemBase.Appkey,
+		"channel": itemBase.Channel,
+	}
+	updateData := map[string]interface{}{
+		"sku_name":   skuData.SkuName,
+		"bar_code":   skuData.BarCode,
+		"sku_code":   skuData.SkuCode,
+		"item_state": itemBase.State,
+		"sku_state":  skuData.State,
+	}
+
+	_ = serv.dao.UpdateSearch(where, updateData)
+	// todo 错误处理
+	return
 }

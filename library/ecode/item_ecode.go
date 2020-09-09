@@ -11,4 +11,5 @@ var (
 	InsertPhotoErr     = New(1004) // 新增photo失败
 	InsertParameterErr = New(1005) // 新增parameter失败
 	InsertSearchErr    = New(1006) // 新增search失败
+	UpdateItemErr      = New(1007) // 更新item失败
 )
