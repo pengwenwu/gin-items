@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"gin-items/library/ecode"
 	"gin-items/library/token"
 	"github.com/astaxie/beego/validation"
@@ -143,6 +144,12 @@ func (serv *Service) Add(item *model.Item) (itemId int, err error) {
 	serv.addPhotos(itemId, item.Photos)
 	serv.addParameters(itemId, item.Parameters)
 
+	pub, _ := rabbitmq.NewProducer()
+	pubData, _ := rabbitmq.MqPack(&rabbitmq.SyncItemInsertData{
+		ItemId: itemId,
+	})
+	pub.Send(rabbitmq.ItemInsert, pubData)
+
 	return
 }
 
@@ -152,12 +159,6 @@ func (serv *Service) addSkus(itemId int, skus []*model.ItemSkus) {
 		sku.ItemId = itemId
 		_ = serv.dao.InsertSku(sku)
 		// todo: 报警校验失败
-		pub, _ := rabbitmq.NewProducer()
-		pubData, _ := rabbitmq.MqPack(&rabbitmq.SyncSkuInsertData{
-			ItemId: itemId,
-			SkuId:  sku.SkuId,
-		})
-		pub.Send(rabbitmq.SkuInsert, pubData)
 	}
 }
 
@@ -221,7 +222,7 @@ func (serv *Service) SyncSkuInsert(recvData *rabbitmq.SyncSkuInsertData) {
 	itemSearch.BarCode = skuData.BarCode
 	itemSearch.SkuState = skuData.State
 
-	_ = serv.dao.InsertSearches(itemSearch)
+	_ = serv.dao.InsertSearch(itemSearch)
 	// todo 错误处理
 	return
 }
@@ -374,10 +375,85 @@ func (serv *Service) DeleteItem(itemId int, isFinalDelete bool, tokenData *token
 	}
 	// 发布商品更新消息
 	pub, _ := rabbitmq.NewProducer()
-	pubData, _ := rabbitmq.MqPack(&rabbitmq.SyncItemSearchesData{
+	pubData, _ := rabbitmq.MqPack(&rabbitmq.SyncItemUpdateData{
 		ItemId: itemId,
 	})
-	pub.Send(rabbitmq.SyncItemSearches, pubData)
+	pub.Send(rabbitmq.ItemInsert, pubData)
 
 	return nil
+}
+
+func (serv *Service) SyncItemUpdate(recvData *rabbitmq.SyncItemUpdateData) {
+	itemId := recvData.ItemId
+	where := map[string]interface{}{
+		"item_id": itemId,
+	}
+	itemBase, err := serv.dao.GetItem(where)
+	if err != nil {
+		// todo: log记录
+		return
+	}
+	where["state"] = itemBase.State
+	skuList, err := serv.dao.GetSkus(where)
+	if err != nil {
+		// todo: log记录
+		return
+	}
+
+	for _, sku := range skuList {
+		where := map[string]interface{}{
+			"item_id": itemId,
+			"sku_id": sku.SkuId,
+		}
+		updateData := map[string]interface{}{
+			"sku_name":   sku.SkuName,
+			"bar_code":   sku.BarCode,
+			"sku_code":   sku.SkuCode,
+			"item_state": itemBase.State,
+			"sku_state":  sku.State,
+		}
+		_ = serv.dao.UpdateSearch(where, updateData)
+		// todo 错误处理
+	}
+	return
+}
+
+func (serv *Service) SyncItemInsert(recvData *rabbitmq.SyncItemInsertData) {
+	itemId := recvData.ItemId
+
+	where := map[string]interface{}{
+		"item_id": itemId,
+	}
+	itemBase, err := serv.dao.GetItem(where)
+	if err != nil {
+		// todo: log记录
+		return
+	}
+	where["state"] = itemBase.State
+	skuList, err := serv.dao.GetSkus(where)
+	if err != nil {
+		// todo: log记录
+		return
+	}
+
+	var searchList []*model.ItemSearches
+	for _, sku := range skuList {
+		itemSearch := &model.ItemSearches{}
+		itemSearch.ItemId = itemBase.ItemId
+		itemSearch.Channel = itemBase.Channel
+		itemSearch.Appkey = itemBase.Appkey
+		itemSearch.ItemState = itemBase.State
+		itemSearch.SkuId = sku.SkuId
+		itemSearch.SkuName = sku.SkuName
+		itemSearch.SkuCode = sku.SkuCode
+		itemSearch.BarCode = sku.BarCode
+		itemSearch.SkuState = sku.State
+
+		searchList = append(searchList, itemSearch)
+	}
+
+	err = serv.dao.InsertSearches(searchList)
+	fmt.Println(err)
+	// todo 错误处理
+	return
 }

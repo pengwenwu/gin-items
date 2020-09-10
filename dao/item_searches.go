@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"fmt"
 	"gin-items/library/ecode"
 	"gin-items/model"
 	"github.com/pkg/errors"
@@ -53,13 +54,20 @@ func (dao *Dao) GetSearchItemTotal(fields string, where map[string]interface{}, 
 	return
 }
 
-func (dao *Dao) InsertSearches(search *model.ItemSearches) error {
+func (dao *Dao) InsertSearch(search *model.ItemSearches) error {
 	dao.MasterServiceItems.Create(&search)
 	if search.Id == 0 {
 		err := ecode.InsertSearchErr
 		return err
 	}
 	return nil
+}
+
+func (dao *Dao) InsertSearches(searchList []*model.ItemSearches) error {
+	for _, v := range searchList {
+		fmt.Printf("%+v\n", v)
+	}
+	return dao.MasterServiceItems.Debug().Create(&searchList).Error
 }
 
 func (dao *Dao) UpdateSearch(where, update map[string]interface{}) error {

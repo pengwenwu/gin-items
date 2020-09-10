@@ -10,7 +10,10 @@ type SyncSkuUpdateData struct {
 	SkuId  int
 }
 
-type SyncItemSearchesData struct {
+type SyncItemInsertData struct {
 	ItemId int
-	SkuId int
+}
+
+type SyncItemUpdateData struct {
+	ItemId int
 }

@@ -93,10 +93,22 @@ func initMqConsumer() {
 		if err != nil {
 			panic(fmt.Errorf("启动mq消费者失败 %s\n", err.Error()))
 		}
-		consumer.Received(rabbitmq.SyncItemSearches, func(receivedData []byte) {
-			data := &rabbitmq.SyncSkuUpdateData{}
+		consumer.Received(rabbitmq.SyncItemInsert, func(receivedData []byte) {
+			data := &rabbitmq.SyncItemInsertData{}
 			_ = rabbitmq.MqUnpack(receivedData, data)
-			serv.SyncSkuUpdate(data)
+			serv.SyncItemInsert(data)
+		})
+	}()
+
+	go func() {
+		consumer, err := rabbitmq.NewConsumer()
+		if err != nil {
+			panic(fmt.Errorf("启动mq消费者失败 %s\n", err.Error()))
+		}
+		consumer.Received(rabbitmq.SyncItemUpdate, func(receivedData []byte) {
+			data := &rabbitmq.SyncItemUpdateData{}
+			_ = rabbitmq.MqUnpack(receivedData, data)
+			serv.SyncItemUpdate(data)
 		})
 	}()
 }
