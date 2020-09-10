@@ -16,7 +16,7 @@ func (dao *Dao) GetItem(where map[string]interface{}) (item *model.Items, err er
 }
 
 func (dao *Dao) InsertItem(item *model.Items) (itemId int, err error) {
-	dao.MasterServiceItems.Create(&item)
+	dao.MasterServiceItems.Debug().Create(&item)
 	if item.ItemId == 0 {
 		err = ecode.InsertItemErr
 		return

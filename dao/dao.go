@@ -4,12 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/golang-migrate/migrate"
-	"github.com/golang-migrate/migrate/database/mysql"
-	_ "github.com/golang-migrate/migrate/source/file"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 
 	"gin-items/library/setting"
 )
@@ -18,7 +14,7 @@ const updateCommonLimit = 1000
 
 type Dao struct {
 	MasterServiceItems *gorm.DB
-	SlaveServiceItems *gorm.DB
+	SlaveServiceItems  *gorm.DB
 }
 
 func New() (d *Dao) {
@@ -36,45 +32,43 @@ func (dao *Dao) init() {
 	dao.SlaveServiceItems = openDB(setting.Config().DB.Slave.ServiceItems)
 }
 
-func openDB (conf *setting.Database) *gorm.DB {
-	DBLink, err := gorm.Open(conf.Type, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8",
+func openDB(conf *setting.Database) *gorm.DB {
+	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8",
 		conf.User,
 		conf.PassWord,
 		conf.Host,
-		conf.Name))
+		conf.Name)
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
-	gorm.DefaultTableNameHandler = func (db *gorm.DB, defaultTableName string) string  {
-		return conf.TablePrefix + defaultTableName
-	}
-	DBLink.SingularTable(true)
+	sqlDB, err := db.DB()
+
+	//gorm.DefaultTableNameHandler = func(db *gorm.DB, defaultTableName string) string {
+	//	return conf.TablePrefix + defaultTableName
+	//}
+
 	if conf.NeedConnectionPool {
-		DBLink.DB().SetMaxIdleConns(conf.MaxIdleConnections)
-		DBLink.DB().SetMaxOpenConns(conf.MaxOpenConnections)
+		sqlDB.SetMaxIdleConns(conf.MaxIdleConnections)
+		sqlDB.SetMaxOpenConns(conf.MaxOpenConnections)
 	}
 
-	return DBLink
+	return db
 }
 
-func execMigration(conf *setting.Database)  {
-	db, _ := sql.Open(conf.Type, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&multiStatements=true",
-		conf.User,
-		conf.PassWord,
-		conf.Host,
-		conf.Name))
-	driver, _ := mysql.WithInstance(db, &mysql.Config{})
-	m, _ := migrate.NewWithDatabaseInstance(
-		"file://migrations",
-		"mysql",
-		driver,
-	)
-	m.Steps(2)
-}
-
-func (dao *Dao) CloseDB() {
-	defer dao.MasterServiceItems.Close()
-	defer dao.SlaveServiceItems.Close()
+func execMigration(conf *setting.Database) {
+	//db, _ := sql.Open(conf.Type, fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&multiStatements=true",
+	//	conf.User,
+	//	conf.PassWord,
+	//	conf.Host,
+	//	conf.Name))
+	//driver, _ := mysql.WithInstance(db, &mysql.Config{})
+	//m, _ := migrate.NewWithDatabaseInstance(
+	//	"file://migrations",
+	//	"mysql",
+	//	driver,
+	//)
+	//m.Steps(2)
 }
 
 // 结果集转切片

@@ -22,7 +22,7 @@ type ResponseData struct {
 
 type ResponseList struct {
 	ResponseData
-	Total int `json:"total"'`
+	Total int64 `json:"total"'`
 }
 
 func (resp *BaseResponse) SetBaseInfo(err error) {

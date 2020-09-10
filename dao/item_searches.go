@@ -1,10 +1,10 @@
 package dao
 
 import (
-	"fmt"
+	"github.com/pkg/errors"
+
 	"gin-items/library/ecode"
 	"gin-items/model"
-	"github.com/pkg/errors"
 )
 
 func (dao *Dao) GetSearchItemIds(fields string, where map[string]interface{}, whereIn model.WhereIn, like map[string]string, order, groupBy string, page, pageSize int) (itemIds []int, err error) {
@@ -36,7 +36,7 @@ func (dao *Dao) GetSearchItemIds(fields string, where map[string]interface{}, wh
 	return
 }
 
-func (dao *Dao) GetSearchItemTotal(fields string, where map[string]interface{}, whereIn model.WhereIn, like map[string]string, order string) (total int, err error) {
+func (dao *Dao) GetSearchItemTotal(fields string, where map[string]interface{}, whereIn model.WhereIn, like map[string]string, order string) (total int64, err error) {
 	query := dao.MasterServiceItems
 	if len(fields) > 0 {
 		query = query.Select(fields)
@@ -64,10 +64,7 @@ func (dao *Dao) InsertSearch(search *model.ItemSearches) error {
 }
 
 func (dao *Dao) InsertSearches(searchList []*model.ItemSearches) error {
-	for _, v := range searchList {
-		fmt.Printf("%+v\n", v)
-	}
-	return dao.MasterServiceItems.Debug().Create(&searchList).Error
+	return dao.MasterServiceItems.Create(&searchList).Error
 }
 
 func (dao *Dao) UpdateSearch(where, update map[string]interface{}) error {

@@ -4,7 +4,6 @@ go 1.12
 
 require (
 	github.com/Microsoft/go-winio v0.4.14 // indirect
-	github.com/apache/thrift v0.12.0 // indirect
 	github.com/astaxie/beego v1.12.0
 	github.com/deckarep/golang-set v1.7.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -21,7 +20,6 @@ require (
 	github.com/gopherjs/gopherjs v0.0.0-20191106031601-ce3c9ade29de // indirect
 	github.com/jehiah/go-strftime v0.0.0-20171201141054-1d33003b3869 // indirect
 	github.com/jinzhu/gorm v1.9.16
-	github.com/jinzhu/now v1.1.1 // indirect
 	github.com/json-iterator/go v1.1.8 // indirect
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/lestrrat-go/file-rotatelogs v2.3.0+incompatible
@@ -30,7 +28,6 @@ require (
 	github.com/mattn/go-isatty v0.0.10 // indirect
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
-	github.com/openzipkin/zipkin-go v0.1.6 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5
 	github.com/sirupsen/logrus v1.4.1
@@ -43,4 +40,6 @@ require (
 	github.com/unknwon/com v1.0.1
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/yaml.v2 v2.2.5 // indirect
+	gorm.io/driver/mysql v1.0.1
+	gorm.io/gorm v1.20.0
 )

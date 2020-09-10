@@ -1,13 +1,14 @@
 package model
 
 import (
-	"gin-items/library/define"
 	"reflect"
 	"strings"
-	"time"
 
 	"github.com/astaxie/beego/validation"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
+
+	"gin-items/helper"
+	"gin-items/library/define"
 )
 
 type Items struct {
@@ -44,7 +45,7 @@ type ItemProps struct {
 	HavePhoto int    `gorm:"column:have_photo" json:"have_photo"`
 	PropDesc  string `gorm:"column:prop_desc" json:"prop_desc"`
 	State     int    `gorm:"column:state" json:"state"`
-	Values    []*ItemPropValues `json:"values"`
+	Values    []*ItemPropValues `gorm:"-" json:"values"`
 	Model
 }
 
@@ -147,74 +148,74 @@ func GetFields(i interface{}) (fields []string) {
 	return
 }
 
-func (items *Items) BeforeCreate(scope *gorm.Scope) error {
-	err := scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
-	err = scope.SetColumn("last_dated", "0000-00-00 00:00:00")
-	return err
+func (items *Items) BeforeCreate(tx *gorm.DB) error {
+	items.Dated = helper.FormatDateTimeNow()
+	items.LastDated = helper.FormatDateTimeZero()
+	return nil
 }
-func (items *Items) BeforeUpdate(scope *gorm.Scope) error {
-	err := scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
-	return err
-}
-
-func (sku *ItemSkus) BeforeCreate(scope *gorm.Scope) error {
-	err := scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
-	err = scope.SetColumn("last_dated", "0000-00-00 00:00:00")
-	return err
-}
-func (sku *ItemSkus) BeforeUpdate(scope *gorm.Scope) error {
-	err := scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
-	return err
+func (items *Items) BeforeUpdate(tx *gorm.DB) error {
+	items.LastDated = helper.FormatDateTimeNow()
+	return nil
 }
 
-func (prop *ItemProps) BeforeCreate(scope *gorm.Scope) error {
-	err := scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
-	err = scope.SetColumn("last_dated", "0000-00-00 00:00:00")
-	return err
+func (sku *ItemSkus) BeforeCreate(tx *gorm.DB) error {
+	sku.Dated = helper.FormatDateTimeNow()
+	sku.LastDated = helper.FormatDateTimeZero()
+	return nil
 }
-func (prop *ItemProps) BeforeUpdate(scope *gorm.Scope) error {
-	err := scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
-	return err
-}
-
-func (propValue *ItemPropValues) BeforeCreate(scope *gorm.Scope) error {
-	err := scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
-	err = scope.SetColumn("last_dated", "0000-00-00 00:00:00")
-	return err
-}
-func (propValue *ItemPropValues) BeforeUpdate(scope *gorm.Scope) error {
-	err := scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
-	return err
+func (sku *ItemSkus) BeforeUpdate(tx *gorm.DB) error {
+	sku.LastDated = helper.FormatDateTimeNow()
+	return nil
 }
 
-func (photo *ItemPhotos) BeforeCreate(scope *gorm.Scope) error {
-	err := scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
-	err = scope.SetColumn("last_dated", "0000-00-00 00:00:00")
-	return err
+func (prop *ItemProps) BeforeCreate(tx *gorm.DB) error {
+	prop.Dated = helper.FormatDateTimeNow()
+	prop.LastDated = helper.FormatDateTimeZero()
+	return nil
 }
-func (photo *ItemPhotos) BeforeUpdate(scope *gorm.Scope) error {
-	err := scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
-	return err
-}
-
-func (parameter *ItemParameters) BeforeCreate(scope *gorm.Scope) error {
-	err := scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
-	err = scope.SetColumn("last_dated", "0000-00-00 00:00:00")
-	return err
-}
-func (parameter *ItemParameters) BeforeUpdate(scope *gorm.Scope) error {
-	err := scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
-	return err
+func (prop *ItemProps) BeforeUpdate(tx *gorm.DB) error {
+	prop.LastDated = helper.FormatDateTimeNow()
+	return nil
 }
 
-func (search *ItemSearches) BeforeCreate(scope *gorm.Scope) error {
-	err := scope.SetColumn("dated", time.Now().Format("2006-01-02 15:04:05"))
-	err = scope.SetColumn("last_dated", "0000-00-00 00:00:00")
-	return err
+func (propValue *ItemPropValues) BeforeCreate(tx *gorm.DB) error {
+	propValue.Dated = helper.FormatDateTimeNow()
+	propValue.LastDated = helper.FormatDateTimeZero()
+	return nil
 }
-func (search *ItemSearches) BeforeUpdate(scope *gorm.Scope) error {
-	err := scope.SetColumn("last_dated", time.Now().Format("2006-01-02 15:04:05"))
-	return err
+func (propValue *ItemPropValues) BeforeUpdate(tx *gorm.DB) error {
+	propValue.LastDated = helper.FormatDateTimeNow()
+	return nil
+}
+
+func (photo *ItemPhotos) BeforeCreate(tx *gorm.DB) error {
+	photo.Dated = helper.FormatDateTimeNow()
+	photo.LastDated = helper.FormatDateTimeZero()
+	return nil
+}
+func (photo *ItemPhotos) BeforeUpdate(tx *gorm.DB) error {
+	photo.LastDated = helper.FormatDateTimeNow()
+	return nil
+}
+
+func (parameter *ItemParameters) BeforeCreate(tx *gorm.DB) error {
+	parameter.Dated = helper.FormatDateTimeNow()
+	parameter.LastDated = helper.FormatDateTimeZero()
+	return nil
+}
+func (parameter *ItemParameters) BeforeUpdate(tx *gorm.DB) error {
+	parameter.LastDated = helper.FormatDateTimeNow()
+	return nil
+}
+
+func (search *ItemSearches) BeforeCreate(tx *gorm.DB) error {
+	search.Dated = helper.FormatDateTimeNow()
+	search.LastDated = helper.FormatDateTimeZero()
+	return nil
+}
+func (search *ItemSearches) BeforeUpdate(tx *gorm.DB) error {
+	search.LastDated = helper.FormatDateTimeNow()
+	return nil
 }
 
 func (item *Item) Valid(v *validation.Validation) {

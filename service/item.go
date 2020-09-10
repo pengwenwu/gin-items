@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"gin-items/library/ecode"
 	"gin-items/library/token"
 	"github.com/astaxie/beego/validation"
@@ -12,7 +11,7 @@ import (
 	"gin-items/model"
 )
 
-func (serv *Service) GetItemList(params *model.ArgItemSearch, tokenData *token.MyCustomClaims) (itemList []*model.Item, total int, err error) {
+func (serv *Service) GetItemList(params *model.ArgItemSearch, tokenData *token.MyCustomClaims) (itemList []*model.Item, total int64, err error) {
 	//valid := validation.Validation{}
 	//valid.Required(params.Fields, "fields")
 	//if valid.HasErrors() {
@@ -453,7 +452,6 @@ func (serv *Service) SyncItemInsert(recvData *rabbitmq.SyncItemInsertData) {
 	}
 
 	err = serv.dao.InsertSearches(searchList)
-	fmt.Println(err)
 	// todo 错误处理
 	return
 }

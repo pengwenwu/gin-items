@@ -3,6 +3,7 @@ package helper
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/astaxie/beego/validation"
 	mapSet "github.com/deckarep/golang-set"
@@ -64,4 +65,12 @@ func GetEcodeBindJson(bindErr error) (err error) {
 	ecode.Register(map[int]string{ecode.RequestErr.Code(): bindErr.Error()})
 	err = ecode.RequestErr
 	return
+}
+
+func FormatDateTimeNow() string {
+	return time.Now().Format("2006-01-02 15:04:05")
+}
+
+func FormatDateTimeZero() string {
+	return "0000-00-00 00:00:00"
 }
