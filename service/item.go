@@ -393,7 +393,7 @@ func (serv *Service) DeleteItem(itemId int, isFinalDelete bool, tokenData *token
 	pubData, _ := rabbitmq.MqPack(&rabbitmq.SyncItemUpdateData{
 		ItemId: itemId,
 	})
-	pub.Send(rabbitmq.ItemInsert, pubData)
+	pub.Send(rabbitmq.ItemUpdate, pubData)
 
 	return nil
 }
