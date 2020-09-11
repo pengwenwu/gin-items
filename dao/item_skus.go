@@ -32,6 +32,10 @@ func (dao *Dao) InsertSku(sku *model.ItemSkus) error {
 	return nil
 }
 
+func (dao *Dao) InsertSkus(skus []*model.ItemSkus) error {
+	return dao.MasterServiceItems.Model(&model.ItemSkus{}).Create(skus).Error
+}
+
 func (dao *Dao) UpdateSkus(where, update map[string]interface{}) error {
 	return dao.MasterServiceItems.
 		Model(&model.ItemSkus{}).

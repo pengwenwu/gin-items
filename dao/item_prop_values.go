@@ -23,6 +23,10 @@ func (dao *Dao) InsertPropValue(propValue *model.ItemPropValues) error {
 	return nil
 }
 
+func (dao *Dao) InsertPropValues(propValues []*model.ItemPropValues) error {
+	return dao.MasterServiceItems.Model(&model.ItemPropValues{}).Create(propValues).Error
+}
+
 func (dao *Dao) DeletePropValues(itemId int) error {
 	return dao.MasterServiceItems.
 		Model(&model.ItemPropValues{}).

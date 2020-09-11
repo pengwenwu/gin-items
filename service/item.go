@@ -156,44 +156,47 @@ func (serv *Service) Add(item *model.Item) (itemId int, err error) {
 func (serv *Service) addSkus(itemId int, skus []*model.ItemSkus) {
 	for _, sku := range skus {
 		sku.ItemId = itemId
-		_ = serv.dao.InsertSku(sku)
-		// todo: 报警校验失败
 	}
+	_ = serv.dao.InsertSkus(skus)
+	// todo: 报警校验失败
 }
 
 // 添加规格属性
 func (serv *Service) addProps(itemId int, props []*model.ItemProps) {
+	var propValues []*model.ItemPropValues
 	for _, prop := range props {
 		prop.ItemId = itemId
 		prop.State = define.ItemPropsStateNormal
-		_ = serv.dao.InsertProp(prop)
-		// todo: 报警校验
+
 		for _, propValue := range prop.Values {
 			propValue.ItemId = itemId
 			propValue.PropName = prop.PropName
 			propValue.State = define.ItemPropsValuesStateNormal
-			_ = serv.dao.InsertPropValue(propValue)
-			// todo：报警校验
+			propValues = append(propValues, propValue)
 		}
 	}
+	// todo: 报警校验
+	_ = serv.dao.InsertProps(props)
+	// todo：报警校验
+	_ = serv.dao.InsertPropValues(propValues)
 }
 
 func (serv *Service) addPhotos(itemId int, photos []*model.ItemPhotos) {
 	for _, photo := range photos {
 		photo.ItemId = itemId
 		photo.State = define.ItemPhotosStateNormal
-		_ = serv.dao.InsertPhoto(photo)
-		// todo: 报警校验
 	}
+	// todo: 报警校验
+	_ = serv.dao.InsertPhotos(photos)
 }
 
 func (serv *Service) addParameters(itemId int, parameters []*model.ItemParameters) {
 	for _, parameter := range parameters {
 		parameter.ItemId = itemId
 		parameter.State = define.ItemParametersStateNormal
-		_ = serv.dao.InsertParameter(parameter)
-		// todo: 报警校验
 	}
+	// todo: 报警校验
+	_ = serv.dao.InsertParameters(parameters)
 }
 
 func (serv *Service) SyncSkuInsert(recvData *rabbitmq.SyncSkuInsertData) {

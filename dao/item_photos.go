@@ -23,6 +23,10 @@ func (dao *Dao) InsertPhoto(photo *model.ItemPhotos) error {
 	return nil
 }
 
+func (dao *Dao) InsertPhotos(photos []*model.ItemPhotos) error {
+	return dao.MasterServiceItems.Model(&model.ItemPhotos{}).Create(photos).Error
+}
+
 func (dao *Dao) DeletePhotos(itemId int) error {
 	return dao.MasterServiceItems.
 		Model(&model.ItemPhotos{}).

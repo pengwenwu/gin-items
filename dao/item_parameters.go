@@ -23,6 +23,10 @@ func (dao *Dao) InsertParameter(parameter *model.ItemParameters) error {
 	return nil
 }
 
+func (dao *Dao) InsertParameters(parameters []*model.ItemParameters) error {
+	return dao.MasterServiceItems.Model(&model.ItemParameters{}).Create(parameters).Error
+}
+
 func (dao *Dao) DeleteParameters(itemId int) error {
 	return dao.MasterServiceItems.
 		Model(&model.ItemParameters{}).
