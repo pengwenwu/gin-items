@@ -10,7 +10,7 @@ import (
 	"gin-items/library/setting"
 )
 
-const updateCommonLimit = 1000
+const commonLimit = 1000
 
 type Dao struct {
 	MasterServiceItems *gorm.DB

@@ -28,10 +28,12 @@ func (dao *Dao) InsertParameters(parameters []*model.ItemParameters) error {
 }
 
 func (dao *Dao) DeleteParameters(itemId int) error {
+	parameter := &model.ItemParameters{State: define.ItemParametersStateDeleted}
 	return dao.MasterServiceItems.
-		Model(&model.ItemParameters{}).
-		Where("item_id = ?", itemId).
-		Limit(updateCommonLimit).
-		Update("state", define.ItemPhotosStateDeleted).
+		Model(&parameter).
+		Select("state", "last_dated").
+		Where("item_id = ? and state = ?", itemId, define.ItemParametersStateNormal).
+		Limit(commonLimit).
+		Updates(&parameter).
 		Error
 }

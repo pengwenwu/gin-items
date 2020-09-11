@@ -5,6 +5,8 @@ import (
 	"gin-items/model"
 )
 
+var updateItemFields = []string{"name", "photo", "detail", "last_dated"}
+
 func (dao *Dao) GetItem(where map[string]interface{}) (item *model.Items, err error) {
 	item = &model.Items{}
 	err = dao.MasterServiceItems.
@@ -25,11 +27,22 @@ func (dao *Dao) InsertItem(item *model.Items) (itemId int, err error) {
 	return
 }
 
-func (dao *Dao) UpdateItem(where, update map[string]interface{}) error {
+func (dao *Dao) UpdateItem(item *model.Items, where map[string]interface{}) error {
 	return dao.MasterServiceItems.
-		Model(&model.Items{}).
+		Model(&item).
+		Select(updateItemFields).
 		Where(where).
 		Limit(1).
-		Updates(update).
+		Updates(&item).
+		Error
+}
+
+func (dao *Dao) DeleteItem(item *model.Items, where map[string]interface{}) error {
+	return dao.MasterServiceItems.
+		Model(&item).
+		Select("state", "last_dated").
+		Where(where).
+		Limit(1).
+		Updates(&item).
 		Error
 }

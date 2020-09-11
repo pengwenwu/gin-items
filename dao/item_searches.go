@@ -3,8 +3,11 @@ package dao
 import (
 	"github.com/pkg/errors"
 
-	"gin-items/library/ecode"
 	"gin-items/model"
+)
+
+var (
+	updateItemSearchesFields = []string{"sku_name", "bar_code", "sku_code", "item_state", "sku_state", "last_dated"}
 )
 
 func (dao *Dao) GetSearchItemIds(fields string, where map[string]interface{}, whereIn model.WhereIn, like map[string]string, order, groupBy string, page, pageSize int) (itemIds []int, err error) {
@@ -55,23 +58,19 @@ func (dao *Dao) GetSearchItemTotal(fields string, where map[string]interface{}, 
 }
 
 func (dao *Dao) InsertSearch(search *model.ItemSearches) error {
-	dao.MasterServiceItems.Create(&search)
-	if search.Id == 0 {
-		err := ecode.InsertSearchErr
-		return err
-	}
-	return nil
+	return dao.MasterServiceItems.Create(&search).Error
 }
 
 func (dao *Dao) InsertSearches(searchList []*model.ItemSearches) error {
-	return dao.MasterServiceItems.Create(&searchList).Error
+	return dao.MasterServiceItems.Model(&model.ItemSearches{}).Create(&searchList).Error
 }
 
-func (dao *Dao) UpdateSearch(where, update map[string]interface{}) error {
+func (dao *Dao) UpdateSearch(itemSearch *model.ItemSearches, where map[string]interface{}) error {
 	return dao.MasterServiceItems.
-		Model(&model.ItemSearches{}).
+		Model(&itemSearch).
+		Select(updateItemSearchesFields).
 		Where(where).
-		Limit(updateCommonLimit).
-		Updates(update).
+		Limit(1).
+		Updates(&itemSearch).
 		Error
 }

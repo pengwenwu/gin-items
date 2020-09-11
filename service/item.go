@@ -4,6 +4,7 @@ import (
 	"gin-items/library/ecode"
 	"gin-items/library/token"
 	"github.com/astaxie/beego/validation"
+	"sync"
 
 	"gin-items/helper"
 	"gin-items/library/define"
@@ -139,15 +140,30 @@ func (serv *Service) Add(item *model.Item) (itemId int, err error) {
 		return
 	}
 	serv.addSkus(itemId, item.Skus)
-	serv.addProps(itemId, item.Props)
-	serv.addPhotos(itemId, item.Photos)
-	serv.addParameters(itemId, item.Parameters)
 
-	pub, _ := rabbitmq.NewProducer()
-	pubData, _ := rabbitmq.MqPack(&rabbitmq.SyncItemInsertData{
-		ItemId: itemId,
-	})
-	pub.Send(rabbitmq.ItemInsert, pubData)
+	wg := sync.WaitGroup{}
+	wg.Add(4)
+	go func() {
+		defer wg.Done()
+		pub, _ := rabbitmq.NewProducer()
+		pubData, _ := rabbitmq.MqPack(&rabbitmq.SyncItemInsertData{
+			ItemId: itemId,
+		})
+		pub.Send(rabbitmq.ItemInsert, pubData)
+	}()
+	go func() {
+		defer wg.Done()
+		serv.addProps(itemId, item.Props)
+	}()
+	go func() {
+		defer wg.Done()
+		serv.addPhotos(itemId, item.Photos)
+	}()
+	go func() {
+		defer wg.Done()
+		serv.addParameters(itemId, item.Parameters)
+	}()
+	wg.Wait()
 
 	return
 }
@@ -224,7 +240,7 @@ func (serv *Service) SyncSkuInsert(recvData *rabbitmq.SyncSkuInsertData) {
 	itemSearch.BarCode = skuData.BarCode
 	itemSearch.SkuState = skuData.State
 
-	_ = serv.dao.InsertSearch(itemSearch)
+	err = serv.dao.InsertSearch(itemSearch)
 	// todo 错误处理
 	return
 }
@@ -258,42 +274,21 @@ func (serv *Service) UpdateItem(item *model.Item, tokenData *token.MyCustomClaim
 	}
 
 	where := map[string]interface{}{
-		"item_id": item.ItemId,
 		"appkey":  item.Appkey,
 		"channel": item.Channel,
 	}
-	updateData := map[string]interface{}{
-		"name":   item.Name,
-		"photo":  item.Photo,
-		"detail": item.Detail,
-	}
-	err := serv.dao.UpdateItem(where, updateData)
+	err := serv.dao.UpdateItem(item.Items, where)
 	if err != nil {
 		err = ecode.UpdateItemErr
 		return err
 	}
 
-	_ = serv.dao.UpdateSkus(where, map[string]interface{}{"state": define.ItemSkuStateDeletedSelf})
+	where["item_id"] = item.ItemId
+	_ = serv.dao.DeleteSkus(where, define.ItemSkuStateDeletedSelf)
 	var newSku []*model.ItemSkus
 	for _, sku := range item.Skus {
 		if sku.SkuId > 0 {
-			updateData = map[string]interface{}{
-				"item_name":  sku.ItemName,
-				"sku_name":   sku.SkuName,
-				"sku_photo":  sku.SkuPhoto,
-				"sku_code":   sku.SkuCode,
-				"bar_code":   sku.BarCode,
-				"properties": sku.Properties,
-				"state":      define.ItemSkuStateNormal,
-			}
-			_ = serv.dao.UpdateSku(sku, where, updateData)
-			// todo: 连接费时，待优化
-			pub, _ := rabbitmq.NewProducer()
-			pubData, _ := rabbitmq.MqPack(&rabbitmq.SyncSkuUpdateData{
-				ItemId: item.ItemId,
-				SkuId:  sku.SkuId,
-			})
-			pub.Send(rabbitmq.SkuUpdate, pubData)
+			_ = serv.dao.UpdateSku(sku, where)
 		} else {
 			newSku = append(newSku, sku)
 		}
@@ -302,15 +297,33 @@ func (serv *Service) UpdateItem(item *model.Item, tokenData *token.MyCustomClaim
 		serv.addSkus(item.ItemId, newSku)
 	}
 
-	_ = serv.dao.DeleteProps(item.ItemId)
-	_ = serv.dao.DeletePropValues(item.ItemId)
-	serv.addProps(item.ItemId, item.Props)
-
-	_ = serv.dao.DeletePhotos(item.ItemId)
-	serv.addPhotos(item.ItemId, item.Photos)
-
-	_ = serv.dao.DeleteParameters(item.ItemId)
-	serv.addParameters(item.ItemId, item.Parameters)
+	wg := sync.WaitGroup{}
+	wg.Add(4)
+	go func() {
+		defer wg.Done()
+		pub, _ := rabbitmq.NewProducer()
+		pubData, _ := rabbitmq.MqPack(&rabbitmq.SyncItemUpdateData{
+			ItemId: item.ItemId,
+		})
+		pub.Send(rabbitmq.ItemUpdate, pubData)
+	}()
+	go func() {
+		defer wg.Done()
+		_ = serv.dao.DeleteProps(item.ItemId)
+		_ = serv.dao.DeletePropValues(item.ItemId)
+		serv.addProps(item.ItemId, item.Props)
+	}()
+	go func() {
+		defer wg.Done()
+		_ = serv.dao.DeletePhotos(item.ItemId)
+		serv.addPhotos(item.ItemId, item.Photos)
+	}()
+	go func() {
+		defer wg.Done()
+		_ = serv.dao.DeleteParameters(item.ItemId)
+		serv.addParameters(item.ItemId, item.Parameters)
+	}()
+	wg.Wait()
 
 	return nil
 }
@@ -335,15 +348,15 @@ func (serv *Service) SyncSkuUpdate(recvData *rabbitmq.SyncSkuUpdateData) {
 		"appkey":  itemBase.Appkey,
 		"channel": itemBase.Channel,
 	}
-	updateData := map[string]interface{}{
-		"sku_name":   skuData.SkuName,
-		"bar_code":   skuData.BarCode,
-		"sku_code":   skuData.SkuCode,
-		"item_state": itemBase.State,
-		"sku_state":  skuData.State,
-	}
 
-	_ = serv.dao.UpdateSearch(where, updateData)
+	itemSearch := &model.ItemSearches{
+		SkuName:   skuData.SkuName,
+		BarCode:   skuData.BarCode,
+		SkuCode:   skuData.SkuCode,
+		ItemState: itemBase.State,
+		SkuState:  skuData.State,
+	}
+	_ = serv.dao.UpdateSearch(itemSearch, where)
 	// todo 错误处理
 	return
 }
@@ -361,17 +374,17 @@ func (serv *Service) DeleteItem(itemId int, isFinalDelete bool, tokenData *token
 		"appkey":  tokenData.AppKey,
 		"channel": tokenData.Channel,
 	}
-	update := make(map[string]interface{})
+	var state int
 	if isFinalDelete {
-		update["state"] = define.ItemStateDeletedReal
+		state = define.ItemStateDeletedReal
 	} else {
-		update["state"] = define.ItemStateDeleted
+		state = define.ItemStateDeleted
 	}
-	err := serv.dao.UpdateItem(where, update)
+	err := serv.dao.DeleteItem(&model.Items{ItemId: itemId, State: state}, where)
 	if err != nil {
 		return err
 	}
-	err = serv.dao.UpdateSkus(where, update)
+	err = serv.dao.DeleteSkus(where, state)
 	if err != nil {
 		return err
 	}
@@ -405,16 +418,16 @@ func (serv *Service) SyncItemUpdate(recvData *rabbitmq.SyncItemUpdateData) {
 	for _, sku := range skuList {
 		where := map[string]interface{}{
 			"item_id": itemId,
-			"sku_id": sku.SkuId,
+			"sku_id":  sku.SkuId,
 		}
-		updateData := map[string]interface{}{
-			"sku_name":   sku.SkuName,
-			"bar_code":   sku.BarCode,
-			"sku_code":   sku.SkuCode,
-			"item_state": itemBase.State,
-			"sku_state":  sku.State,
+		itemSearch := &model.ItemSearches{
+			SkuName:   sku.SkuName,
+			BarCode:   sku.BarCode,
+			SkuCode:   sku.SkuCode,
+			ItemState: itemBase.State,
+			SkuState:  sku.State,
 		}
-		_ = serv.dao.UpdateSearch(where, updateData)
+		_ = serv.dao.UpdateSearch(itemSearch, where)
 		// todo 错误处理
 	}
 	return

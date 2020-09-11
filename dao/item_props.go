@@ -28,10 +28,12 @@ func (dao *Dao) InsertProps(props []*model.ItemProps) error {
 }
 
 func (dao *Dao) DeleteProps(itemId int) error {
+	props := &model.ItemProps{State: define.ItemPropsStateDeleted}
 	return dao.MasterServiceItems.
-		Model(&model.ItemProps{}).
-		Where("item_id = ?", itemId).
-		Limit(updateCommonLimit).
-		Update("state", define.ItemPropsStateDeleted).
+		Model(&props).
+		Select("state", "last_dated").
+		Where("item_id = ? and state = ?", itemId, define.ItemPropsStateNormal).
+		Limit(commonLimit).
+		Updates(props).
 		Error
 }

@@ -28,10 +28,12 @@ func (dao *Dao) InsertPhotos(photos []*model.ItemPhotos) error {
 }
 
 func (dao *Dao) DeletePhotos(itemId int) error {
+	photo := &model.ItemPhotos{State: define.ItemPhotosStateDeleted}
 	return dao.MasterServiceItems.
-		Model(&model.ItemPhotos{}).
-		Where("item_id = ?", itemId).
-		Limit(updateCommonLimit).
-		Update("state", define.ItemPhotosStateDeleted).
+		Model(&photo).
+		Select("state", "last_dated").
+		Where("item_id = ? and state = ?", itemId, define.ItemPhotosStateNormal).
+		Limit(commonLimit).
+		Updates(&photo).
 		Error
 }

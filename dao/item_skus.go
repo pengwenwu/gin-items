@@ -5,6 +5,10 @@ import (
 	"gin-items/model"
 )
 
+var (
+	updateSkuFields = []string{"item_name", "sku_name", "sku_photo", "sku_code", "bar_code", "properties", "state", "last_dated"}
+)
+
 func (dao *Dao) GetSku(where map[string]interface{}) (sku *model.ItemSkus, err error) {
 	sku = &model.ItemSkus{}
 	err = dao.MasterServiceItems.
@@ -40,16 +44,28 @@ func (dao *Dao) UpdateSkus(where, update map[string]interface{}) error {
 	return dao.MasterServiceItems.
 		Model(&model.ItemSkus{}).
 		Where(where).
-		Limit(updateCommonLimit).
+		Limit(commonLimit).
 		Updates(update).
 		Error
 }
 
-func (dao *Dao) UpdateSku(sku *model.ItemSkus, where, update map[string] interface{}) error {
+func (dao *Dao) UpdateSku(sku *model.ItemSkus, where map[string]interface{}) error {
 	return dao.MasterServiceItems.
 		Model(&sku).
+		Select(updateSkuFields).
 		Where(where).
 		Limit(1).
-		Updates(update).
+		Updates(&sku).
+		Error
+}
+
+func (dao *Dao) DeleteSkus(where map[string]interface{}, state int) error {
+	sku := &model.ItemSkus{State: state}
+	return dao.MasterServiceItems.
+		Model(&sku).
+		Select("state", "last_dated").
+		Where(where).
+		Limit(commonLimit).
+		Updates(&sku).
 		Error
 }
