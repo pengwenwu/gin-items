@@ -37,12 +37,13 @@ func (dao *Dao) PutUpdateItem(item *model.Items, where map[string]interface{}) e
 		Error
 }
 
-func (dao *Dao) DeleteItem(item *model.Items, where map[string]interface{}) error {
+func (dao *Dao) UpdateItemState(where map[string]interface{}, state int) error {
+	item := &model.Items{State:state}
 	return dao.MasterServiceItems.
 		Model(&item).
 		Select("state", "last_dated").
 		Where(where).
-		Limit(1).
+		Limit(commonLimit).
 		Updates(&item).
 		Error
 }

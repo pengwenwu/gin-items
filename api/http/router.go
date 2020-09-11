@@ -50,9 +50,11 @@ func InitRouter() *gin.Engine {
 		// 获取多个item
 		itemGroup.GET("/getByIds", GetItemByItemIds)
 		// 更新item
-		itemGroup.PUT("/:item_id", UpdateItem)
+		itemGroup.PUT("update/:item_id", UpdateItem)
 		// 删除item
 		itemGroup.DELETE("/:item_id", DeleteItem)
+		// 恢复商品
+		itemGroup.PUT("recover/:item_id", RecoverItem)
 	}
 
 	return r

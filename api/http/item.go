@@ -163,3 +163,12 @@ func DeleteItem(c *gin.Context)  {
 	app.Response(c, nil, err)
 	return
 }
+
+func RecoverItem(c *gin.Context)  {
+	tokenData := getTokenData(c)
+	itemId := com.StrTo(c.Param("item_id")).MustInt()
+
+	err := serv.RecoverItem(itemId, tokenData)
+	app.Response(c, nil, err)
+	return
+}

@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"gin-items/library/define"
 	"gin-items/library/ecode"
 	"gin-items/model"
 )
@@ -59,12 +60,24 @@ func (dao *Dao) PutUpdateSku(sku *model.ItemSkus, where map[string]interface{}) 
 		Error
 }
 
-func (dao *Dao) DeleteSkus(where map[string]interface{}, state int) error {
+func (dao *Dao) UpdateSkuState(where map[string]interface{}, state int) error {
 	sku := &model.ItemSkus{State: state}
 	return dao.MasterServiceItems.
 		Model(&sku).
 		Select("state", "last_dated").
 		Where(where).
+		Limit(commonLimit).
+		Updates(&sku).
+		Error
+}
+
+func (dao *Dao) RecoverSku(where map[string]interface{}) error {
+	sku := &model.ItemSkus{State: define.ItemSkuStateNormal}
+	return dao.MasterServiceItems.
+		Model(&sku).
+		Select("state", "last_dated").
+		Where(where).
+		Where("state in ?", []int{define.ItemSkuStateDeleted, define.ItemSkuStateDeletedReal}).
 		Limit(commonLimit).
 		Updates(&sku).
 		Error

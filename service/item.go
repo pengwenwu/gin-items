@@ -284,7 +284,7 @@ func (serv *Service) UpdateItem(item *model.Item, tokenData *token.MyCustomClaim
 	}
 
 	where["item_id"] = item.ItemId
-	_ = serv.dao.DeleteSkus(where, define.ItemSkuStateDeletedSelf)
+	_ = serv.dao.UpdateSkuState(where, define.ItemSkuStateDeletedSelf)
 	var newSku []*model.ItemSkus
 	for _, sku := range item.Skus {
 		if sku.SkuId > 0 {
@@ -380,11 +380,11 @@ func (serv *Service) DeleteItem(itemId int, isFinalDelete bool, tokenData *token
 	} else {
 		state = define.ItemStateDeleted
 	}
-	err := serv.dao.DeleteItem(&model.Items{ItemId: itemId, State: state}, where)
+	err := serv.dao.UpdateItemState(where, state)
 	if err != nil {
 		return err
 	}
-	err = serv.dao.DeleteSkus(where, state)
+	err = serv.dao.UpdateSkuState(where, state)
 	if err != nil {
 		return err
 	}
@@ -470,4 +470,28 @@ func (serv *Service) SyncItemInsert(recvData *rabbitmq.SyncItemInsertData) {
 	err = serv.dao.InsertSearches(searchList)
 	// todo 错误处理
 	return
+}
+
+func (serv *Service) RecoverItem(itemId int, tokenData *token.MyCustomClaims) error {
+	valid := validation.Validation{}
+	valid.Min(itemId, 1, "item_id")
+	if valid.HasErrors() {
+		err := helper.GetEcodeValidParam(valid.Errors)
+		return err
+	}
+
+	where := map[string]interface{}{
+		"item_id": itemId,
+		"appkey": tokenData.AppKey,
+		"channel": tokenData.Channel,
+	}
+	_ = serv.dao.UpdateItemState(where, define.ItemStateNormal)
+	_ = serv.dao.RecoverSku(where)
+	// 发布商品更新消息
+	pub, _ := rabbitmq.NewProducer()
+	pubData, _ := rabbitmq.MqPack(&rabbitmq.SyncItemUpdateData{
+		ItemId: itemId,
+	})
+	pub.Send(rabbitmq.ItemUpdate, pubData)
+	return nil
 }
