@@ -65,7 +65,7 @@ func (dao *Dao) InsertSearches(searchList []*model.ItemSearches) error {
 	return dao.MasterServiceItems.Model(&model.ItemSearches{}).Create(&searchList).Error
 }
 
-func (dao *Dao) UpdateSearch(itemSearch *model.ItemSearches, where map[string]interface{}) error {
+func (dao *Dao) PutUpdateSearch(itemSearch *model.ItemSearches, where map[string]interface{}) error {
 	return dao.MasterServiceItems.
 		Model(&itemSearch).
 		Select(updateItemSearchesFields).

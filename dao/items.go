@@ -27,7 +27,7 @@ func (dao *Dao) InsertItem(item *model.Items) (itemId int, err error) {
 	return
 }
 
-func (dao *Dao) UpdateItem(item *model.Items, where map[string]interface{}) error {
+func (dao *Dao) PutUpdateItem(item *model.Items, where map[string]interface{}) error {
 	return dao.MasterServiceItems.
 		Model(&item).
 		Select(updateItemFields).

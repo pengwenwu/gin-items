@@ -49,7 +49,7 @@ func (dao *Dao) UpdateSkus(where, update map[string]interface{}) error {
 		Error
 }
 
-func (dao *Dao) UpdateSku(sku *model.ItemSkus, where map[string]interface{}) error {
+func (dao *Dao) PutUpdateSku(sku *model.ItemSkus, where map[string]interface{}) error {
 	return dao.MasterServiceItems.
 		Model(&sku).
 		Select(updateSkuFields).

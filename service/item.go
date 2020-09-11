@@ -277,7 +277,7 @@ func (serv *Service) UpdateItem(item *model.Item, tokenData *token.MyCustomClaim
 		"appkey":  item.Appkey,
 		"channel": item.Channel,
 	}
-	err := serv.dao.UpdateItem(item.Items, where)
+	err := serv.dao.PutUpdateItem(item.Items, where)
 	if err != nil {
 		err = ecode.UpdateItemErr
 		return err
@@ -288,7 +288,7 @@ func (serv *Service) UpdateItem(item *model.Item, tokenData *token.MyCustomClaim
 	var newSku []*model.ItemSkus
 	for _, sku := range item.Skus {
 		if sku.SkuId > 0 {
-			_ = serv.dao.UpdateSku(sku, where)
+			_ = serv.dao.PutUpdateSku(sku, where)
 		} else {
 			newSku = append(newSku, sku)
 		}
@@ -356,7 +356,7 @@ func (serv *Service) SyncSkuUpdate(recvData *rabbitmq.SyncSkuUpdateData) {
 		ItemState: itemBase.State,
 		SkuState:  skuData.State,
 	}
-	_ = serv.dao.UpdateSearch(itemSearch, where)
+	_ = serv.dao.PutUpdateSearch(itemSearch, where)
 	// todo 错误处理
 	return
 }
@@ -427,7 +427,7 @@ func (serv *Service) SyncItemUpdate(recvData *rabbitmq.SyncItemUpdateData) {
 			ItemState: itemBase.State,
 			SkuState:  sku.State,
 		}
-		_ = serv.dao.UpdateSearch(itemSearch, where)
+		_ = serv.dao.PutUpdateSearch(itemSearch, where)
 		// todo 错误处理
 	}
 	return
