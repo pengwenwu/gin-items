@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"gin-items/library/constant"
 	"gin-items/library/ecode"
 	"gin-items/model"
 )
@@ -40,7 +41,7 @@ func (dao *Dao) UpdateItemState(where map[string]interface{}, state int) error {
 	return dao.MasterServiceItems.
 		Select("state", "last_dated").
 		Where(where).
-		Limit(commonLimit).
+		Limit(constant.CommonLimit).
 		Updates(&item).
 		Error
 }

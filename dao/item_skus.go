@@ -19,14 +19,21 @@ func (dao *Dao) GetSku(where map[string]interface{}) (sku *model.ItemSkus, err e
 	return
 }
 
-func (dao *Dao) GetSkus(where map[string]interface{}) (skus []*model.ItemSkus, err error) {
+func (dao *Dao) GetSkuList(where map[string]interface{}) (skus []*model.ItemSkus, err error) {
 	err = dao.MasterServiceItems.
 		Where(where).
+		Limit(constant.CommonLimit).
 		Find(&skus).Error
 	return
 }
 
-func (dao *Dao) GetSkusBySkuIds(skuIds []int) (skus model.ItemSkus, err error) {
+func (dao *Dao) GetSkuListBySkuIds(skuIds []int) (skuList []*model.ItemSkus, err error) {
+	err = dao.MasterServiceItems.
+		Where("sku_id in (?)", skuIds).
+		Limit(constant.CommonLimit).
+		Find(&skuIds).
+		Error
+	return
 }
 
 func (dao *Dao) InsertSku(sku *model.ItemSkus) error {
@@ -46,7 +53,7 @@ func (dao *Dao) UpdateSkus(where, update map[string]interface{}) error {
 	return dao.MasterServiceItems.
 		Model(&model.ItemSkus{}).
 		Where(where).
-		Limit(commonLimit).
+		Limit(constant.CommonLimit).
 		Updates(update).
 		Error
 }
@@ -65,7 +72,7 @@ func (dao *Dao) UpdateSkuState(where map[string]interface{}, state int) error {
 	return dao.MasterServiceItems.
 		Select("state", "last_dated").
 		Where(where).
-		Limit(commonLimit).
+		Limit(constant.CommonLimit).
 		Updates(&sku).
 		Error
 }
@@ -76,7 +83,7 @@ func (dao *Dao) RecoverSku(where map[string]interface{}) error {
 		Select("state", "last_dated").
 		Where(where).
 		Where("state in ?", []int{constant.ItemSkuStateDeleted, constant.ItemSkuStateDeletedReal}).
-		Limit(commonLimit).
+		Limit(constant.CommonLimit).
 		Updates(&sku).
 		Error
 }

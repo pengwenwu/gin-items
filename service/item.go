@@ -21,7 +21,7 @@ func (serv *Service) GetItemList(param *model.ParamItemSearch, tokenData *token.
 			delete(like, k)
 		}
 	}
-	itemSearchList, total, err := serv.dao.GetItemSearches(whereMap, param.WhereIn, like, param.Order, param.GroupBy, param.Page, param.PageSize)
+	itemSearchList, total, err := serv.dao.GetItemSearchList(whereMap, param.WhereIn, like, param.Order, param.GroupBy, param.Page, param.PageSize)
 	if err != nil {
 		return
 	}
@@ -77,7 +77,7 @@ func (serv *Service) GetItemByItemId(itemId int, tokenData *token.MyCustomClaims
 		return
 	}
 	where["state"] = item.Items.State
-	item.Skus, err = serv.dao.GetSkus(where)
+	item.Skus, err = serv.dao.GetSkuList(where)
 	delete(where, "appkey")
 	delete(where, "channel")
 	where["state"] = constant.ItemPhotosStateNormal
@@ -397,7 +397,7 @@ func (serv *Service) SyncItemUpdate(recvData *rabbitmq.SyncItemUpdateData) {
 		return
 	}
 	where["state"] = itemBase.State
-	skuList, err := serv.dao.GetSkus(where)
+	skuList, err := serv.dao.GetSkuList(where)
 	if err != nil {
 		// todo: log记录
 		return
@@ -433,7 +433,7 @@ func (serv *Service) SyncItemInsert(recvData *rabbitmq.SyncItemInsertData) {
 		return
 	}
 	where["state"] = itemBase.State
-	skuList, err := serv.dao.GetSkus(where)
+	skuList, err := serv.dao.GetSkuList(where)
 	if err != nil {
 		// todo: log记录
 		return

@@ -14,9 +14,14 @@ func (serv *Service) GetSkuList(param *model.ParamItemSearch, tokenData *token.M
 			delete(like, k)
 		}
 	}
-	itemSearchList, total, err := serv.dao.GetItemSearches(whereMap, param.WhereIn, like, param.Order, param.GroupBy, param.Page, param.PageSize)
+	itemSearchList, total, err := serv.dao.GetItemSearchList(whereMap, param.WhereIn, like, param.Order, param.GroupBy, param.Page, param.PageSize)
 	if err != nil {
 		return
 	}
+	var skuIds []int
+	for _, itemSearch := range itemSearchList {
+		skuIds = append(skuIds, itemSearch.SkuId)
+	}
+	skuList, err = serv.dao.GetSkuListBySkuIds(skuIds)
 	return
 }

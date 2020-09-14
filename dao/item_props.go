@@ -25,7 +25,7 @@ func (dao *Dao) DeleteProps(itemId int) error {
 	return dao.MasterServiceItems.
 		Select("state", "last_dated").
 		Where("item_id = ? and state = ?", itemId, constant.ItemPropsStateNormal).
-		Limit(commonLimit).
+		Limit(constant.CommonLimit).
 		Updates(props).
 		Error
 }

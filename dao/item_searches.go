@@ -8,7 +8,7 @@ var (
 	updateItemSearchesFields = []string{"sku_name", "bar_code", "sku_code", "item_state", "sku_state", "last_dated"}
 )
 
-func (dao *Dao) GetItemSearches(where map[string]interface{}, whereIn model.WhereIn, like map[string]string, order, groupBy string, page, pageSize int) (itemSearchList []*model.ItemSearches, total int64, err error) {
+func (dao *Dao) GetItemSearchList(where map[string]interface{}, whereIn model.WhereIn, like map[string]string, order, groupBy string, page, pageSize int) (itemSearchList []*model.ItemSearches, total int64, err error) {
 	offset := (page - 1) * pageSize
 	query := dao.MasterServiceItems.
 		Model(&model.ItemSearches{}).

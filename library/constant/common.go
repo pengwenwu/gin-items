@@ -1,4 +1,7 @@
 package constant
 
-const Page = 1
-const PageSize = 20
+const (
+	Page        = 1
+	PageSize    = 20
+	CommonLimit = 1000
+)

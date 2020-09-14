@@ -25,7 +25,7 @@ func (dao *Dao) DeletePhotos(itemId int) error {
 	return dao.MasterServiceItems.
 		Select("state", "last_dated").
 		Where("item_id = ? and state = ?", itemId, constant.ItemPhotosStateNormal).
-		Limit(commonLimit).
+		Limit(constant.CommonLimit).
 		Updates(&photo).
 		Error
 }

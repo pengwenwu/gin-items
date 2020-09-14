@@ -25,7 +25,7 @@ func (dao *Dao) DeleteParameters(itemId int) error {
 	return dao.MasterServiceItems.
 		Select("state", "last_dated").
 		Where("item_id = ? and state = ?", itemId, constant.ItemParametersStateNormal).
-		Limit(commonLimit).
+		Limit(constant.CommonLimit).
 		Updates(&parameter).
 		Error
 }
