@@ -10,15 +10,15 @@ import (
 
 func GetSkuList(c *gin.Context)  {
 	//tokenData := getTokenData(c)
-	argSkuList := model.NewArgSkuList()
+	paramItemSearch := model.NewParamItemSearch()
 
-	if bindErr := c.BindJSON(&argSkuList); bindErr != nil {
+	if bindErr := c.BindJSON(&paramItemSearch); bindErr != nil {
 		err := helper.GetEcodeBindJson(bindErr)
 		app.Response(c, nil, err)
 		return
 	}
-	//
-	//list, total, err := serv.GetItemList(argItemSearch, tokenData)
+
+	//list, total, err := serv.GetSkuList(argItemSearch, tokenData)
 	//resp := &app.ResponseList{}
 	//resp.Data = list
 	//resp.Total = total

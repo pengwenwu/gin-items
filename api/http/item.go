@@ -14,15 +14,16 @@ import (
 //获取商品列表
 func GetItemList(c *gin.Context) {
 	tokenData := getTokenData(c)
-	argItemSearch := model.NewArgItemSearch()
+	paramItemSearch := model.NewParamItemSearch()
+	paramItemSearch.GroupBy = "item_id"
 
-	if bindErr := c.BindJSON(&argItemSearch); bindErr != nil {
+	if bindErr := c.BindJSON(&paramItemSearch); bindErr != nil {
 		err := helper.GetEcodeBindJson(bindErr)
 		app.Response(c, nil, err)
 		return
 	}
 
-	list, total, err := serv.GetItemList(argItemSearch, tokenData)
+	list, total, err := serv.GetItemList(paramItemSearch, tokenData)
 	resp := &app.ResponseList{}
 	resp.Data = list
 	resp.Total = total
@@ -48,12 +49,6 @@ func GetItemBaseByItemId(c *gin.Context) {
 func GetItemByItemId(c *gin.Context) {
 	tokenData := getTokenData(c)
 	itemId := com.StrTo(c.Param("item_id")).MustInt()
-	//argGetItemById := model.ArgGetItemById{}
-	//if bindErr := c.BindJSON(&argGetItemById);bindErr != nil{
-	//	err := helper.GetEcodeBindJson(bindErr)
-	//	appGin.Response(nil, err)
-	//	return
-	//}
 
 	item, err := serv.GetItemByItemId(itemId, tokenData)
 

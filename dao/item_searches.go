@@ -44,7 +44,7 @@ func (dao *Dao) InsertSearches(searchList []*model.ItemSearches) error {
 }
 
 func (dao *Dao) PutUpdateSearch(itemSearch *model.ItemSearches, where map[string]interface{}) error {
-	return dao.MasterServiceItems.Debug().
+	return dao.MasterServiceItems.
 		Select(updateItemSearchesFields).
 		Where(where).
 		Limit(1).

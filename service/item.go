@@ -12,16 +12,16 @@ import (
 	"gin-items/model"
 )
 
-func (serv *Service) GetItemList(params *model.ArgItemSearch, tokenData *token.MyCustomClaims) (itemList []*model.Item, total int64, err error) {
-	whereMap := params.GetWhereMap(tokenData)
-	like := params.Like
+func (serv *Service) GetItemList(param *model.ParamItemSearch, tokenData *token.MyCustomClaims) (itemList []*model.Item, total int64, err error) {
+	whereMap := param.GetWhereMap(tokenData)
+	like := param.Like
 	for k, v := range like {
 		if k == "name" {
 			like["sku_name"] = v
 			delete(like, k)
 		}
 	}
-	itemSearchList, total, err := serv.dao.GetItemSearches(whereMap, params.WhereIn, like, params.Order, params.GroupBy, params.Page, params.PageSize)
+	itemSearchList, total, err := serv.dao.GetItemSearches(whereMap, param.WhereIn, like, param.Order, param.GroupBy, param.Page, param.PageSize)
 	if err != nil {
 		return
 	}
@@ -470,7 +470,7 @@ func (serv *Service) RecoverItem(itemId int, tokenData *token.MyCustomClaims) er
 
 	where := map[string]interface{}{
 		"item_id": itemId,
-		"appkey": tokenData.AppKey,
+		"appkey":  tokenData.AppKey,
 		"channel": tokenData.Channel,
 	}
 	_ = serv.dao.UpdateItemState(where, constant.ItemStateNormal)
