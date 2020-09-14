@@ -24,9 +24,10 @@ func GetItemList(c *gin.Context) {
 	}
 
 	list, total, err := serv.GetItemList(paramItemSearch, tokenData)
-	resp := &app.ResponseList{}
-	resp.Data = list
-	resp.Total = total
+	resp := &app.ResponseList{
+		ResponseData: app.ResponseData{Data:list},
+		Total:        total,
+	}
 	app.Response(c, resp, err)
 	return
 }

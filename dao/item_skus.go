@@ -26,6 +26,9 @@ func (dao *Dao) GetSkus(where map[string]interface{}) (skus []*model.ItemSkus, e
 	return
 }
 
+func (dao *Dao) GetSkusBySkuIds(skuIds []int) (skus model.ItemSkus, err error) {
+}
+
 func (dao *Dao) InsertSku(sku *model.ItemSkus) error {
 	dao.MasterServiceItems.Create(&sku)
 	if sku.SkuId == 0 {

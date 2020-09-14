@@ -9,7 +9,7 @@ import (
 )
 
 func GetSkuList(c *gin.Context)  {
-	//tokenData := getTokenData(c)
+	tokenData := getTokenData(c)
 	paramItemSearch := model.NewParamItemSearch()
 
 	if bindErr := c.BindJSON(&paramItemSearch); bindErr != nil {
@@ -18,10 +18,11 @@ func GetSkuList(c *gin.Context)  {
 		return
 	}
 
-	//list, total, err := serv.GetSkuList(argItemSearch, tokenData)
-	//resp := &app.ResponseList{}
-	//resp.Data = list
-	//resp.Total = total
-	//app.Response(c, resp, err)
+	list, total, err := serv.GetSkuList(paramItemSearch, tokenData)
+	resp := &app.ResponseList{
+		ResponseData: app.ResponseData{Data:list},
+		Total:        total,
+	}
+	app.Response(c, resp, err)
 	return
 }
