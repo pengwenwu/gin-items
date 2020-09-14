@@ -3,10 +3,10 @@ package http
 import (
 	"gin-items/helper"
 	"gin-items/library/app"
-	"gin-items/library/define"
-	"gin-items/library/setting"
+	"gin-items/library/constant"
 	"gin-items/library/token"
 	"gin-items/model"
+
 	"github.com/gin-gonic/gin"
 	"github.com/unknwon/com"
 )
@@ -14,14 +14,7 @@ import (
 //获取商品列表
 func GetItemList(c *gin.Context) {
 	tokenData := getTokenData(c)
-	argItemSearch := &model.ArgItemSearch{
-		ItemState: define.ItemStateNormal,
-		SkuState:  define.ItemSkuStateNormal,
-		Page:      setting.Config().APP.Page,
-		PageSize:  setting.Config().APP.PageSize,
-		Order:     "item_id desc",
-		GroupBy:   "item_id",
-	}
+	argItemSearch := model.NewArgItemSearch()
 
 	if bindErr := c.BindJSON(&argItemSearch); bindErr != nil {
 		err := helper.GetEcodeBindJson(bindErr)
@@ -78,7 +71,7 @@ func AddItem(c *gin.Context) {
 	tokenData := getTokenData(c)
 	item := &model.Item{
 		Items: &model.Items{
-			State:   define.ItemStateNormal,
+			State:   constant.ItemStateNormal,
 			Appkey:  tokenData.AppKey,
 			Channel: tokenData.Channel,
 		},

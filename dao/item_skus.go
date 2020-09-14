@@ -1,7 +1,7 @@
 package dao
 
 import (
-	"gin-items/library/define"
+	"gin-items/library/constant"
 	"gin-items/library/ecode"
 	"gin-items/model"
 )
@@ -13,7 +13,6 @@ var (
 func (dao *Dao) GetSku(where map[string]interface{}) (sku *model.ItemSkus, err error) {
 	sku = &model.ItemSkus{}
 	err = dao.MasterServiceItems.
-		Table(sku.TableName()).
 		Where(where).
 		Limit(1).
 		Find(&sku).Error
@@ -22,7 +21,6 @@ func (dao *Dao) GetSku(where map[string]interface{}) (sku *model.ItemSkus, err e
 
 func (dao *Dao) GetSkus(where map[string]interface{}) (skus []*model.ItemSkus, err error) {
 	err = dao.MasterServiceItems.
-		Table(model.ItemSkus{}.TableName()).
 		Where(where).
 		Find(&skus).Error
 	return
@@ -38,7 +36,7 @@ func (dao *Dao) InsertSku(sku *model.ItemSkus) error {
 }
 
 func (dao *Dao) InsertSkus(skus []*model.ItemSkus) error {
-	return dao.MasterServiceItems.Model(&model.ItemSkus{}).Create(skus).Error
+	return dao.MasterServiceItems.Create(skus).Error
 }
 
 func (dao *Dao) UpdateSkus(where, update map[string]interface{}) error {
@@ -52,7 +50,6 @@ func (dao *Dao) UpdateSkus(where, update map[string]interface{}) error {
 
 func (dao *Dao) PutUpdateSku(sku *model.ItemSkus, where map[string]interface{}) error {
 	return dao.MasterServiceItems.
-		Model(&sku).
 		Select(updateSkuFields).
 		Where(where).
 		Limit(1).
@@ -63,7 +60,6 @@ func (dao *Dao) PutUpdateSku(sku *model.ItemSkus, where map[string]interface{}) 
 func (dao *Dao) UpdateSkuState(where map[string]interface{}, state int) error {
 	sku := &model.ItemSkus{State: state}
 	return dao.MasterServiceItems.
-		Model(&sku).
 		Select("state", "last_dated").
 		Where(where).
 		Limit(commonLimit).
@@ -72,12 +68,11 @@ func (dao *Dao) UpdateSkuState(where map[string]interface{}, state int) error {
 }
 
 func (dao *Dao) RecoverSku(where map[string]interface{}) error {
-	sku := &model.ItemSkus{State: define.ItemSkuStateNormal}
+	sku := &model.ItemSkus{State: constant.ItemSkuStateNormal}
 	return dao.MasterServiceItems.
-		Model(&sku).
 		Select("state", "last_dated").
 		Where(where).
-		Where("state in ?", []int{define.ItemSkuStateDeleted, define.ItemSkuStateDeletedReal}).
+		Where("state in ?", []int{constant.ItemSkuStateDeleted, constant.ItemSkuStateDeletedReal}).
 		Limit(commonLimit).
 		Updates(&sku).
 		Error

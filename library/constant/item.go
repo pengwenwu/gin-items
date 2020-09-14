@@ -1,4 +1,4 @@
-package define
+package constant
 
 // items 商品表
 const (

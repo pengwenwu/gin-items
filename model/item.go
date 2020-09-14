@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 
 	"gin-items/helper"
-	"gin-items/library/define"
+	"gin-items/library/constant"
 )
 
 type Items struct {
@@ -101,34 +101,6 @@ type Item struct {
 	Parameters []*ItemParameters `json:"parameters"`
 	Skus       []*ItemSkus `json:"skus"`
 	Props      []*ItemProps `json:"props"`
-}
-
-func (Items) TableName() string {
-	return "items"
-}
-
-func (ItemSkus) TableName() string {
-	return "item_skus"
-}
-
-func (ItemSearches) TableName() string {
-	return "item_searches"
-}
-
-func (ItemProps) TableName() string {
-	return "item_props"
-}
-
-func (ItemPropValues) TableName() string {
-	return "item_prop_values"
-}
-
-func (ItemPhotos) TableName() string {
-	return "item_photos"
-}
-
-func (ItemParameters) TableName() string {
-	return "item_parameters"
 }
 
 func GetFields(i interface{}) (fields []string) {
@@ -263,7 +235,7 @@ func (item *Item) Valid(v *validation.Validation) {
 			sku.Appkey = item.Appkey
 			sku.Channel = item.Channel
 			sku.ItemName = item.Name
-			sku.State = define.ItemSkuStateNormal
+			sku.State = constant.ItemSkuStateNormal
 		}
 	}
 
@@ -286,7 +258,7 @@ func (item *Item) Valid(v *validation.Validation) {
 	}
 	// 当没有轮播图、主图的时候，设置默认图
 	if len(item.Photos) == 0 && item.Photo == "" {
-		item.Photo = define.ItemDefaultPhoto
+		item.Photo = constant.ItemDefaultPhoto
 	}
 	// 当没有轮播图的时候，选设置的第一张默认图
 	if len(item.Photos) == 0 {

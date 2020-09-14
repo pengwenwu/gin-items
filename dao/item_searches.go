@@ -1,8 +1,6 @@
 package dao
 
 import (
-	"github.com/pkg/errors"
-
 	"gin-items/model"
 )
 
@@ -10,50 +8,30 @@ var (
 	updateItemSearchesFields = []string{"sku_name", "bar_code", "sku_code", "item_state", "sku_state", "last_dated"}
 )
 
-func (dao *Dao) GetSearchItemIds(fields string, where map[string]interface{}, whereIn model.WhereIn, like map[string]string, order, groupBy string, page, pageSize int) (itemIds []int, err error) {
+func (dao *Dao) GetItemSearches(where map[string]interface{}, whereIn model.WhereIn, like map[string]string, order, groupBy string, page, pageSize int) (itemSearchList []*model.ItemSearches, total int64, err error) {
 	offset := (page - 1) * pageSize
 	query := dao.MasterServiceItems.
-		Table(model.ItemSearches{}.TableName()).
-		Select(fields).
+		Model(&model.ItemSearches{}).
 		Where(where)
 	if len(whereIn.ItemId) > 0 {
 		query = query.Where("item_id in (?)", whereIn.ItemId)
 	}
-	if len(like) > 0 {
-		for k, v := range like {
-			query = query.Where(k+" like ?", "%"+v+"%")
-		}
-	}
-	rows, err := query.Offset(offset).Limit(pageSize).Rows()
-	if err != nil {
-		return
-	}
-	for rows.Next() {
-		var itemId int
-		if err = rows.Scan(&itemId); err != nil {
-			err = errors.WithStack(err)
-			return
-		}
-		itemIds = append(itemIds, itemId)
-	}
-	return
-}
-
-func (dao *Dao) GetSearchItemTotal(fields string, where map[string]interface{}, whereIn model.WhereIn, like map[string]string, order string) (total int64, err error) {
-	query := dao.MasterServiceItems
-	if len(fields) > 0 {
-		query = query.Select(fields)
-	}
-	query = query.Where(where)
-	if len(whereIn.ItemId) > 0 {
-		query = query.Where("item_id in (?)", whereIn.ItemId)
+	if len(whereIn.SkuId) > 0 {
+		query = query.Where("sku_id in (?)", whereIn.SkuId)
 	}
 	if len(like) > 0 {
 		for k, v := range like {
 			query = query.Where(k+" like ?", "%"+v+"%")
 		}
 	}
-	err = query.Model(&model.ItemSearches{}).Count(&total).Error
+	if order != "" {
+		query = query.Order(order)
+	}
+	if groupBy != "" {
+		query = query.Group(groupBy)
+	}
+	err = query.Count(&total).Error
+	err = query.Offset(offset).Limit(pageSize).Find(&itemSearchList).Error
 	return
 }
 
@@ -62,12 +40,11 @@ func (dao *Dao) InsertSearch(search *model.ItemSearches) error {
 }
 
 func (dao *Dao) InsertSearches(searchList []*model.ItemSearches) error {
-	return dao.MasterServiceItems.Model(&model.ItemSearches{}).Create(&searchList).Error
+	return dao.MasterServiceItems.Create(&searchList).Error
 }
 
 func (dao *Dao) PutUpdateSearch(itemSearch *model.ItemSearches, where map[string]interface{}) error {
-	return dao.MasterServiceItems.
-		Model(&itemSearch).
+	return dao.MasterServiceItems.Debug().
 		Select(updateItemSearchesFields).
 		Where(where).
 		Limit(1).

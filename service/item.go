@@ -7,22 +7,13 @@ import (
 	"sync"
 
 	"gin-items/helper"
-	"gin-items/library/define"
+	"gin-items/library/constant"
 	"gin-items/library/rabbitmq"
 	"gin-items/model"
 )
 
 func (serv *Service) GetItemList(params *model.ArgItemSearch, tokenData *token.MyCustomClaims) (itemList []*model.Item, total int64, err error) {
-	//valid := validation.Validation{}
-	//valid.Required(params.Fields, "fields")
-	//if valid.HasErrors() {
-	//	err = helper.GetEcodeValidParam(valid.Errors)
-	//	return
-	//}
-	//fields := params.Fields
-	whereMap := params.GetWhereMap()
-	whereMap["appkey"] = tokenData.AppKey
-	whereMap["channel"] = tokenData.Channel
+	whereMap := params.GetWhereMap(tokenData)
 	like := params.Like
 	for k, v := range like {
 		if k == "name" {
@@ -30,17 +21,14 @@ func (serv *Service) GetItemList(params *model.ArgItemSearch, tokenData *token.M
 			delete(like, k)
 		}
 	}
-	itemIds, err := serv.dao.GetSearchItemIds("item_id", whereMap, params.WhereIn, like, params.Order, params.GroupBy, params.Page, params.PageSize)
+	itemSearchList, total, err := serv.dao.GetItemSearches(whereMap, params.WhereIn, like, params.Order, params.GroupBy, params.Page, params.PageSize)
 	if err != nil {
 		return
 	}
-	total, err = serv.dao.GetSearchItemTotal("count(distinct(item_id))", whereMap, params.WhereIn, like, params.Order)
-	if total <= 0 {
-		return
-	}
+
 	// 查询对应的商品详情
-	for _, itemId := range itemIds {
-		item, err := serv.GetItemByItemId(itemId, tokenData)
+	for _, itemSearch := range itemSearchList {
+		item, err := serv.GetItemByItemId(itemSearch.ItemId, tokenData)
 		if err != nil {
 			continue
 		}
@@ -92,11 +80,11 @@ func (serv *Service) GetItemByItemId(itemId int, tokenData *token.MyCustomClaims
 	item.Skus, err = serv.dao.GetSkus(where)
 	delete(where, "appkey")
 	delete(where, "channel")
-	where["state"] = define.ItemPhotosStateNormal
+	where["state"] = constant.ItemPhotosStateNormal
 	item.Photos, err = serv.dao.GetPhotos(where)
-	where["state"] = define.ItemParametersStateNormal
+	where["state"] = constant.ItemParametersStateNormal
 	item.Parameters, err = serv.dao.GetParameters(where)
-	where["state"] = define.ItemPropsStateNormal
+	where["state"] = constant.ItemPropsStateNormal
 	item.Props, err = serv.dao.GetProps(where)
 	if len(item.Props) > 0 {
 		for k, prop := range item.Props {
@@ -122,7 +110,7 @@ func (serv *Service) Add(item *model.Item) (itemId int, err error) {
 			ItemName: item.Name,
 			SkuName:  item.Name,
 			SkuPhoto: item.Photo,
-			State:    define.ItemSkuStateNormal,
+			State:    constant.ItemSkuStateNormal,
 		})
 	}
 
@@ -133,7 +121,7 @@ func (serv *Service) Add(item *model.Item) (itemId int, err error) {
 		Name:    item.Name,
 		Photo:   item.Photo,
 		Detail:  item.Detail,
-		State:   define.ItemStateNormal,
+		State:   constant.ItemStateNormal,
 	}
 	itemId, err = serv.dao.InsertItem(baseItems)
 	if err != nil {
@@ -182,12 +170,12 @@ func (serv *Service) addProps(itemId int, props []*model.ItemProps) {
 	var propValues []*model.ItemPropValues
 	for _, prop := range props {
 		prop.ItemId = itemId
-		prop.State = define.ItemPropsStateNormal
+		prop.State = constant.ItemPropsStateNormal
 
 		for _, propValue := range prop.Values {
 			propValue.ItemId = itemId
 			propValue.PropName = prop.PropName
-			propValue.State = define.ItemPropsValuesStateNormal
+			propValue.State = constant.ItemPropsValuesStateNormal
 			propValues = append(propValues, propValue)
 		}
 	}
@@ -200,7 +188,7 @@ func (serv *Service) addProps(itemId int, props []*model.ItemProps) {
 func (serv *Service) addPhotos(itemId int, photos []*model.ItemPhotos) {
 	for _, photo := range photos {
 		photo.ItemId = itemId
-		photo.State = define.ItemPhotosStateNormal
+		photo.State = constant.ItemPhotosStateNormal
 	}
 	// todo: 报警校验
 	_ = serv.dao.InsertPhotos(photos)
@@ -209,7 +197,7 @@ func (serv *Service) addPhotos(itemId int, photos []*model.ItemPhotos) {
 func (serv *Service) addParameters(itemId int, parameters []*model.ItemParameters) {
 	for _, parameter := range parameters {
 		parameter.ItemId = itemId
-		parameter.State = define.ItemParametersStateNormal
+		parameter.State = constant.ItemParametersStateNormal
 	}
 	// todo: 报警校验
 	_ = serv.dao.InsertParameters(parameters)
@@ -284,7 +272,7 @@ func (serv *Service) UpdateItem(item *model.Item, tokenData *token.MyCustomClaim
 	}
 
 	where["item_id"] = item.ItemId
-	_ = serv.dao.UpdateSkuState(where, define.ItemSkuStateDeletedSelf)
+	_ = serv.dao.UpdateSkuState(where, constant.ItemSkuStateDeletedSelf)
 	var newSku []*model.ItemSkus
 	for _, sku := range item.Skus {
 		if sku.SkuId > 0 {
@@ -376,9 +364,9 @@ func (serv *Service) DeleteItem(itemId int, isFinalDelete bool, tokenData *token
 	}
 	var state int
 	if isFinalDelete {
-		state = define.ItemStateDeletedReal
+		state = constant.ItemStateDeletedReal
 	} else {
-		state = define.ItemStateDeleted
+		state = constant.ItemStateDeleted
 	}
 	err := serv.dao.UpdateItemState(where, state)
 	if err != nil {
@@ -485,7 +473,7 @@ func (serv *Service) RecoverItem(itemId int, tokenData *token.MyCustomClaims) er
 		"appkey": tokenData.AppKey,
 		"channel": tokenData.Channel,
 	}
-	_ = serv.dao.UpdateItemState(where, define.ItemStateNormal)
+	_ = serv.dao.UpdateItemState(where, constant.ItemStateNormal)
 	_ = serv.dao.RecoverSku(where)
 	// 发布商品更新消息
 	pub, _ := rabbitmq.NewProducer()

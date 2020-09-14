@@ -1,38 +1,30 @@
 package dao
 
 import (
-	"gin-items/library/define"
-	"gin-items/library/ecode"
+	"gin-items/library/constant"
 	"gin-items/model"
 )
 
 func (dao *Dao) GetPropValues(where map[string]interface{}) (propValues []*model.ItemPropValues, err error) {
 	err = dao.MasterServiceItems.
-		Table(model.ItemPropValues{}.TableName()).
 		Where(where).
 		Find(&propValues).Error
 	return
 }
 
 func (dao *Dao) InsertPropValue(propValue *model.ItemPropValues) error {
-	dao.MasterServiceItems.Create(&propValue)
-	if propValue.Id == 0 {
-		err := ecode.InsertPropValueErr
-		return err
-	}
-	return nil
+	return dao.MasterServiceItems.Create(&propValue).Error
 }
 
 func (dao *Dao) InsertPropValues(propValues []*model.ItemPropValues) error {
-	return dao.MasterServiceItems.Model(&model.ItemPropValues{}).Create(propValues).Error
+	return dao.MasterServiceItems.Create(propValues).Error
 }
 
 func (dao *Dao) DeletePropValues(itemId int) error {
-	propValue := &model.ItemPropValues{State: define.ItemPropsValuesStateDeleted}
+	propValue := &model.ItemPropValues{State: constant.ItemPropsValuesStateDeleted}
 	return dao.MasterServiceItems.
-		Model(&propValue).
 		Select("state", "last_dated").
-		Where("item_id = ? and state = ?", itemId, define.ItemPropsValuesStateNormal).
+		Where("item_id = ? and state = ?", itemId, constant.ItemPropsValuesStateNormal).
 		Limit(commonLimit).
 		Updates(&propValue).
 		Error

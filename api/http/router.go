@@ -55,6 +55,17 @@ func InitRouter() *gin.Engine {
 		itemGroup.DELETE("/:item_id", DeleteItem)
 		// 恢复商品
 		itemGroup.PUT("recover/:item_id", RecoverItem)
+		// todo 批量添加商品
+		//itemGroup.POST("addBatch", AddBatchItem)
+		// todo 批量删除商品
+		//itemGroup.POST("deleteBatch", DeleteBatchItem)
+	}
+
+	skuGroup := r.Group("sku")
+	skuGroup.Use(jwt.Jwt())
+	{
+		// 获取sku列表
+		skuGroup.GET("", GetSkuList)
 	}
 
 	return r

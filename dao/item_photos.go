@@ -1,38 +1,30 @@
 package dao
 
 import (
-	"gin-items/library/define"
-	"gin-items/library/ecode"
+	"gin-items/library/constant"
 	"gin-items/model"
 )
 
 func (dao *Dao) GetPhotos(where map[string]interface{}) (photos []*model.ItemPhotos, err error) {
 	err = dao.MasterServiceItems.
-		Table(model.ItemPhotos{}.TableName()).
 		Where(where).
 		Find(&photos).Error
 	return
 }
 
 func (dao *Dao) InsertPhoto(photo *model.ItemPhotos) error {
-	dao.MasterServiceItems.Create(&photo)
-	if photo.Id == 0 {
-		err := ecode.InsertPhotoErr
-		return err
-	}
-	return nil
+	return dao.MasterServiceItems.Create(&photo).Error
 }
 
 func (dao *Dao) InsertPhotos(photos []*model.ItemPhotos) error {
-	return dao.MasterServiceItems.Model(&model.ItemPhotos{}).Create(photos).Error
+	return dao.MasterServiceItems.Create(photos).Error
 }
 
 func (dao *Dao) DeletePhotos(itemId int) error {
-	photo := &model.ItemPhotos{State: define.ItemPhotosStateDeleted}
+	photo := &model.ItemPhotos{State: constant.ItemPhotosStateDeleted}
 	return dao.MasterServiceItems.
-		Model(&photo).
 		Select("state", "last_dated").
-		Where("item_id = ? and state = ?", itemId, define.ItemPhotosStateNormal).
+		Where("item_id = ? and state = ?", itemId, constant.ItemPhotosStateNormal).
 		Limit(commonLimit).
 		Updates(&photo).
 		Error
