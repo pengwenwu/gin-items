@@ -12,16 +12,10 @@ import (
 
 type appConfig struct {
 	RunMode  string `mapstructure:"run_mode"`
-	APP      appInfo
 	Server   serverInfo
 	DB       multiDB `mapstructure:"database"`
 	RabbitMq RabbitMq
 	Log      logInfo
-}
-
-type appInfo struct {
-	Page     int `mapstructure:"page"`
-	PageSize int `mapstructure:"page_size"`
 }
 
 type serverInfo struct {
