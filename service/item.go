@@ -1,15 +1,12 @@
 package service
 
 import (
-	"sync"
-
 	"gin-items/helper"
 	"gin-items/library/constant"
 	"gin-items/library/ecode"
 	"gin-items/library/rabbitmq"
 	"gin-items/library/token"
 	"gin-items/model"
-
 	"github.com/astaxie/beego/validation"
 )
 
@@ -131,10 +128,7 @@ func (serv *Service) Add(item *model.Item) (itemId int, err error) {
 	}
 	serv.addSkus(itemId, item.Skus)
 
-	wg := sync.WaitGroup{}
-	wg.Add(4)
 	go func() {
-		defer wg.Done()
 		pub, _ := rabbitmq.NewProducer()
 		pubData, _ := rabbitmq.MqPack(&rabbitmq.SyncItemInsertData{
 			ItemId: itemId,
@@ -142,18 +136,14 @@ func (serv *Service) Add(item *model.Item) (itemId int, err error) {
 		pub.Send(rabbitmq.ItemInsert, pubData)
 	}()
 	go func() {
-		defer wg.Done()
 		serv.addProps(itemId, item.Props)
 	}()
 	go func() {
-		defer wg.Done()
 		serv.addPhotos(itemId, item.Photos)
 	}()
 	go func() {
-		defer wg.Done()
 		serv.addParameters(itemId, item.Parameters)
 	}()
-	wg.Wait()
 
 	return
 }
@@ -287,10 +277,7 @@ func (serv *Service) UpdateItem(item *model.Item, tokenData *token.MyCustomClaim
 		serv.addSkus(item.ItemId, newSku)
 	}
 
-	wg := sync.WaitGroup{}
-	wg.Add(4)
 	go func() {
-		defer wg.Done()
 		pub, _ := rabbitmq.NewProducer()
 		pubData, _ := rabbitmq.MqPack(&rabbitmq.SyncItemUpdateData{
 			ItemId: item.ItemId,
@@ -298,22 +285,18 @@ func (serv *Service) UpdateItem(item *model.Item, tokenData *token.MyCustomClaim
 		pub.Send(rabbitmq.ItemUpdate, pubData)
 	}()
 	go func() {
-		defer wg.Done()
 		_ = serv.dao.DeleteProps(item.ItemId)
 		_ = serv.dao.DeletePropValues(item.ItemId)
 		serv.addProps(item.ItemId, item.Props)
 	}()
 	go func() {
-		defer wg.Done()
 		_ = serv.dao.DeletePhotos(item.ItemId)
 		serv.addPhotos(item.ItemId, item.Photos)
 	}()
 	go func() {
-		defer wg.Done()
 		_ = serv.dao.DeleteParameters(item.ItemId)
 		serv.addParameters(item.ItemId, item.Parameters)
 	}()
-	wg.Wait()
 
 	return nil
 }
@@ -379,11 +362,13 @@ func (serv *Service) DeleteItem(itemId int, isFinalDelete bool, tokenData *token
 		return err
 	}
 	// 发布商品更新消息
-	pub, _ := rabbitmq.NewProducer()
-	pubData, _ := rabbitmq.MqPack(&rabbitmq.SyncItemUpdateData{
-		ItemId: itemId,
-	})
-	pub.Send(rabbitmq.ItemUpdate, pubData)
+	go func() {
+		pub, _ := rabbitmq.NewProducer()
+		pubData, _ := rabbitmq.MqPack(&rabbitmq.SyncItemUpdateData{
+			ItemId: itemId,
+		})
+		pub.Send(rabbitmq.ItemUpdate, pubData)
+	}()
 
 	return nil
 }
@@ -475,13 +460,18 @@ func (serv *Service) RecoverItem(itemId int, tokenData *token.MyCustomClaims) er
 		"appkey":  tokenData.AppKey,
 		"channel": tokenData.Channel,
 	}
+	// todo 错误校验
 	_ = serv.dao.UpdateItemState(where, constant.ItemStateNormal)
 	_ = serv.dao.RecoverSku(where)
+
 	// 发布商品更新消息
-	pub, _ := rabbitmq.NewProducer()
-	pubData, _ := rabbitmq.MqPack(&rabbitmq.SyncItemUpdateData{
-		ItemId: itemId,
-	})
-	pub.Send(rabbitmq.ItemUpdate, pubData)
+	go func() {
+		pub, _ := rabbitmq.NewProducer()
+		pubData, _ := rabbitmq.MqPack(&rabbitmq.SyncItemUpdateData{
+			ItemId: itemId,
+		})
+		pub.Send(rabbitmq.ItemUpdate, pubData)
+	}()
+
 	return nil
 }
