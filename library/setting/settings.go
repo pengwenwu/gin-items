@@ -15,7 +15,7 @@ type appConfig struct {
 	Server   serverInfo
 	DB       multiDB `mapstructure:"database"`
 	RabbitMq RabbitMq
-	Log      logInfo
+	Log      logInfo  `mapstructure:"log"`
 }
 
 type serverInfo struct {
@@ -56,6 +56,10 @@ type RabbitMq struct {
 	User     string `mapstructure:"user"`
 	Password string `mapstructure:"password"`
 	Vhost    string `mapstructure:"vhost"`
+}
+
+type multiLog struct {
+	
 }
 
 type logInfo struct {

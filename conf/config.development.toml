@@ -43,5 +43,9 @@ run_mode = "debug"
     vhost = "/"
 
 [log]
-    log_file_path = "/Users/pengwenwu/my_go/src/gin-items/logs"
-    log_file_name = "access.log"
+    [log.acccess_log]
+        file_path = "/Users/pengwenwu/my_go/src/gin-items/logs"
+        file_name = "access.log"
+    [log.error_log]
+        file_path = "/Users/pengwenwu/my_go/src/gin-items/logs"
+        file_name = "error.log"

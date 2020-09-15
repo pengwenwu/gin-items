@@ -17,6 +17,7 @@ require (
 	github.com/lestrrat-go/file-rotatelogs v2.3.0+incompatible
 	github.com/lestrrat-go/strftime v1.0.1 // indirect
 	github.com/mattn/go-isatty v0.0.10 // indirect
+	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5
 	github.com/sirupsen/logrus v1.4.1
@@ -27,8 +28,10 @@ require (
 	github.com/tebeka/strftime v0.1.4 // indirect
 	github.com/ugorji/go v1.1.7 // indirect
 	github.com/unknwon/com v1.0.1
+	go.uber.org/zap v1.10.0
 	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
+	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.2.5 // indirect
 	gorm.io/driver/mysql v1.0.1
 	gorm.io/gorm v1.20.0
