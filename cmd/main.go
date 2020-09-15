@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	router := apiHTTP.InitRouter()
+	router := apiHTTP.Init()
 
 	s := &http.Server{
 		Addr:           fmt.Sprintf(":%d", setting.Config().Server.HttpPort),

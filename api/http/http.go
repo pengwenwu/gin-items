@@ -16,12 +16,14 @@ var (
 	serv *service.Service
 )
 
-func InitRouter() *gin.Engine {
+func Init() *gin.Engine {
 	initService()
-
 	// 启动mq消费者
 	go initMqConsumer()
+	return initRouter()
+}
 
+func initRouter() *gin.Engine {
 	r := gin.New()
 	r.Use(
 		gin.Logger(),       // Logger:控制台输出（线上环境可取消）
