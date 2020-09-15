@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"sync/atomic"
 
-	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
 )
 
 var (
@@ -107,7 +107,7 @@ func Cause(e error) Codes {
 		return OK
 	}
 	// 增加空记录错误返回判断
-	if e == gorm.ErrRecordNotFound {
+	if errors.Is(e, gorm.ErrRecordNotFound) {
 		return RecordNotFound
 	}
 	ec, ok := errors.Cause(e).(Codes)

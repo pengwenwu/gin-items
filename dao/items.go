@@ -2,7 +2,6 @@ package dao
 
 import (
 	"gin-items/library/constant"
-	"gin-items/library/ecode"
 	"gin-items/model"
 )
 
@@ -12,17 +11,12 @@ func (dao *Dao) GetItem(where map[string]interface{}) (item *model.Items, err er
 	item = &model.Items{}
 	err = dao.MasterServiceItems.
 		Where(where).
-		Limit(1).
-		Find(&item).Error
+		Take(&item).Error
 	return
 }
 
 func (dao *Dao) InsertItem(item *model.Items) (itemId int, err error) {
-	dao.MasterServiceItems.Create(&item)
-	if item.ItemId == 0 {
-		err = ecode.InsertItemErr
-		return
-	}
+	err = dao.MasterServiceItems.Create(&item).Error
 	itemId = item.ItemId
 	return
 }

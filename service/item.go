@@ -1,15 +1,16 @@
 package service
 
 import (
-	"gin-items/library/ecode"
-	"gin-items/library/token"
-	"github.com/astaxie/beego/validation"
 	"sync"
 
 	"gin-items/helper"
 	"gin-items/library/constant"
+	"gin-items/library/ecode"
 	"gin-items/library/rabbitmq"
+	"gin-items/library/token"
 	"gin-items/model"
+
+	"github.com/astaxie/beego/validation"
 )
 
 func (serv *Service) GetItemList(param *model.ParamItemSearch, tokenData *token.MyCustomClaims) (itemList []*model.Item, total int64, err error) {
@@ -125,6 +126,7 @@ func (serv *Service) Add(item *model.Item) (itemId int, err error) {
 	}
 	itemId, err = serv.dao.InsertItem(baseItems)
 	if err != nil {
+		err = ecode.InsertItemErr
 		return
 	}
 	serv.addSkus(itemId, item.Skus)
