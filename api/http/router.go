@@ -66,6 +66,8 @@ func InitRouter() *gin.Engine {
 	{
 		// 获取sku列表
 		skuGroup.GET("", GetSkuList)
+		// 获取sku信息
+		skuGroup.GET("/:sku_id", GetSkuBySkuId)
 	}
 
 	return r

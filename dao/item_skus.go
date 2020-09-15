@@ -19,11 +19,11 @@ func (dao *Dao) GetSku(where map[string]interface{}) (sku *model.ItemSkus, err e
 	return
 }
 
-func (dao *Dao) GetSkuList(where map[string]interface{}) (skus []*model.ItemSkus, err error) {
+func (dao *Dao) GetSkuList(where map[string]interface{}) (skuList []*model.ItemSkus, err error) {
 	err = dao.MasterServiceItems.
 		Where(where).
 		Limit(constant.CommonLimit).
-		Find(&skus).Error
+		Find(&skuList).Error
 	return
 }
 
@@ -31,7 +31,7 @@ func (dao *Dao) GetSkuListBySkuIds(skuIds []int) (skuList []*model.ItemSkus, err
 	err = dao.MasterServiceItems.
 		Where("sku_id in (?)", skuIds).
 		Limit(constant.CommonLimit).
-		Find(&skuIds).
+		Find(&skuList).
 		Error
 	return
 }

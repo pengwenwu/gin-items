@@ -1,8 +1,10 @@
 package service
 
 import (
+	"gin-items/helper"
 	"gin-items/library/token"
 	"gin-items/model"
+	"github.com/astaxie/beego/validation"
 )
 
 func (serv *Service) GetSkuList(param *model.ParamItemSearch, tokenData *token.MyCustomClaims) (skuList []*model.ItemSkus, total int64, err error) {
@@ -23,5 +25,21 @@ func (serv *Service) GetSkuList(param *model.ParamItemSearch, tokenData *token.M
 		skuIds = append(skuIds, itemSearch.SkuId)
 	}
 	skuList, err = serv.dao.GetSkuListBySkuIds(skuIds)
+	return
+}
+
+func (serv *Service) GetSkuBySkuId(skuId int, tokenData *token.MyCustomClaims) (sku *model.ItemSkus, err error) {
+	valid := validation.Validation{}
+	valid.Min(skuId, 1, "sku_id")
+	if valid.HasErrors() {
+		err = helper.GetEcodeValidParam(valid.Errors)
+		return
+	}
+	where := map[string]interface{}{
+		"appkey": tokenData.AppKey,
+		"channel": tokenData.Channel,
+		"sku_id": skuId,
+	}
+	sku, err = serv.dao.GetSku(where)
 	return
 }
