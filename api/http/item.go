@@ -6,7 +6,6 @@ import (
 	"gin-items/library/constant"
 	"gin-items/library/token"
 	"gin-items/model"
-
 	"github.com/gin-gonic/gin"
 	"github.com/unknwon/com"
 )
@@ -38,6 +37,7 @@ func GetItemBaseByItemId(c *gin.Context) {
 	itemId := com.StrTo(c.Param("item_id")).MustInt()
 
 	item, err := serv.GetItemBaseByItemId(itemId, tokenData)
+
 	if err != nil {
 		app.Response(c, nil, err)
 		return

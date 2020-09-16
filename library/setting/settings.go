@@ -72,8 +72,8 @@ type errorLog struct {
 }
 
 type LogConfig struct {
-	FilePath string `mapstructure:"file_path"`
-	FileName string `mapstructure:"file_name"`
+	FilePath   string `mapstructure:"file_path"`
+	FileName   string `mapstructure:"file_name"`
 }
 
 var (

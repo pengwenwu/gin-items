@@ -2,100 +2,166 @@ package log
 
 import (
 	"fmt"
+	"io"
+	"net"
+	"net/http"
+	"net/http/httputil"
 	"os"
 	"path"
+	"runtime/debug"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
-	"github.com/rifflock/lfshook"
-	"github.com/sirupsen/logrus"
-	//"github.com/natefinch/lumberjack"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	"gin-items/library/setting"
 )
 
-var Logger *zap.Logger
+var (
+	AccessLogger *zap.Logger
+	ErrorLogger  *zap.Logger
+)
 
-func InitLogger()  {
-	//cfg := setting.Config()
-	//lumberJackLogger := &lumberjack.Logger{
-	//	Filename:   "", // 日志文件路径
-	//	MaxSize:    0, // 每个日志文件保存的最大尺寸 单位：M
-	//	MaxAge:     0, // 日志文件最多保存多少个备份
-	//	MaxBackups: 0, // 文件最多保存多少天
-	//	LocalTime:  false,
-	//	Compress:   false, // 是否压缩
-	//}
+func InitLogger() {
+	go initAccessLogger()
+	go initErrorLog()
 }
 
-// 日志记录到文件
-func LoggerToFile() gin.HandlerFunc {
-	logFilePath := setting.Config().Log.AccessLog.FilePath
-	logFileName := setting.Config().Log.AccessLog.FileName
+func initAccessLogger() {
+	cfg := setting.Config().Log.AccessLog
 	//日志文件
-	fileName := path.Join(logFilePath, logFileName)
-	//写入文件
-	src, err := os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
+	fileName := path.Join(cfg.FilePath, cfg.FileName)
+	writer := getLogWriter(fileName)
+	encoder := getEncoder()
+	var level = new(zapcore.Level)
+	err := level.UnmarshalText([]byte("info"))
 	if err != nil {
-		fmt.Println("err", err)
+		fmt.Printf("init access_logger failed, err:%v\n", err)
+		return
 	}
-	//实例化
-	logger := logrus.New()
-	//设置输出
-	logger.Out = src
-	//设置日志级别
-	logger.SetLevel(logrus.DebugLevel)
-	// 日志切割
+	core := zapcore.NewCore(encoder, zapcore.AddSync(writer), level)
+	AccessLogger = zap.New(core, zap.AddCaller())
+	return
+}
+
+func initErrorLog() {
+	cfg := setting.Config().Log.ErrorLog
+	//日志文件
+	fileName := path.Join(cfg.FilePath, cfg.FileName)
+	writer := getLogWriter(fileName)
+	encoder := getEncoder()
+	var level = new(zapcore.Level)
+	err := level.UnmarshalText([]byte("info"))
+	if err != nil {
+		fmt.Printf("init error_logger failed, err:%v\n", err)
+		return
+	}
+	core := zapcore.NewCore(encoder, zapcore.AddSync(writer), level)
+	ErrorLogger = zap.New(core, zap.AddCaller())
+	return
+}
+
+func getLogWriter(filename string) io.Writer {
+	// 日志切割，保存15天日志，按天分割日志
 	logWriter, err := rotatelogs.New(
 		// 分割后的文件名称
-		fileName+".%Y%m%d.log",
+		filename+".%Y%m%d",
 		// 生成软链，指向最新日志文件
-		rotatelogs.WithLinkName(fileName),
+		rotatelogs.WithLinkName(filename),
 		// 设置最大保存时间(7天)
 		rotatelogs.WithMaxAge(7*24*time.Hour),
 		// 设置日志切割时间间隔(1天)
 		rotatelogs.WithRotationTime(24*time.Hour),
 	)
-	writeMap := lfshook.WriterMap{
-		logrus.InfoLevel:  logWriter,
-		logrus.FatalLevel: logWriter,
-		logrus.DebugLevel: logWriter,
-		logrus.WarnLevel:  logWriter,
-		logrus.ErrorLevel: logWriter,
-		logrus.PanicLevel: logWriter,
+	if err != nil {
+		panic(err)
 	}
-	lfHook := lfshook.NewHook(writeMap, &logrus.JSONFormatter{
-		TimestampFormat:"2006-01-02 15:04:05",
-	})
-	// 新增 Hook
-	logger.AddHook(lfHook)
+	return logWriter
+}
+
+func getEncoder() zapcore.Encoder {
+	encoderConfig := zap.NewProductionEncoderConfig()
+	encoderConfig.EncodeTime = func(i time.Time, encoder zapcore.PrimitiveArrayEncoder) {
+		encoder.AppendString(i.Format("2006-01-02 15:04:05"))
+	}
+	encoderConfig.EncodeLevel = zapcore.LowercaseLevelEncoder // 日志级别转小写
+	encoderConfig.EncodeDuration = func(duration time.Duration, encoder zapcore.PrimitiveArrayEncoder) {
+		encoder.AppendInt64(int64(duration) / 1000000)
+	}
+	encoderConfig.EncodeCaller = zapcore.ShortCallerEncoder // 以包/文件:行号 格式化调用堆栈
+	return zapcore.NewJSONEncoder(encoderConfig)
+}
+
+// 日志记录
+func Logger(logger *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 开始时间
 		startTime := time.Now()
 		// 处理请求
 		c.Next()
-		// 结束时间
-		endTime := time.Now()
 		// 执行时间
-		latencyTime := endTime.Sub(startTime)
-		// 请求方式
-		reqMethod := c.Request.Method
-		// 请求路由
-		reqUri := c.Request.RequestURI
-		// 状态码
-		statusCode := c.Writer.Status()
-		// 请求IP
-		clientIP := c.ClientIP()
-		// 日志格式
-		logger.WithFields(logrus.Fields{
-			"status_code"  : statusCode,
-			"latency_time" : latencyTime,
-			"client_ip"    : clientIP,
-			"req_method"   : reqMethod,
-			"req_uri"      : reqUri,
-		}).Info()
+		costTime := time.Since(startTime)
+
+		logger.Info(
+			c.Request.URL.Path,
+			zap.Int("status", c.Writer.Status()),
+			zap.Duration("cost", costTime),
+			zap.String("method", c.Request.Method),
+			zap.String("uri", c.Request.RequestURI),
+			zap.String("ip", c.ClientIP()),
+			zap.String("user-agent", c.Request.UserAgent()),
+			zap.String("errors", c.Errors.ByType(gin.ErrorTypePrivate).String()),
+		)
+	}
+}
+
+// recover掉项目可能出现的panic，并使用zap记录相关日志，替换gin默认的recover
+func Recovery(logger *zap.Logger, stack bool) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		defer func() {
+			if err := recover(); err != nil {
+				// Check for a broken connection, as it is not really a
+				// condition that warrants a panic stack trace.
+				var brokenPipe bool
+				if ne, ok := err.(*net.OpError); ok {
+					if se, ok := ne.Err.(*os.SyscallError); ok {
+						if strings.Contains(strings.ToLower(se.Error()), "broken pipe") || strings.Contains(strings.ToLower(se.Error()), "connection reset by peer") {
+							brokenPipe = true
+						}
+					}
+				}
+
+				httpRequest, _ := httputil.DumpRequest(c.Request, false)
+				if brokenPipe {
+					logger.Error(c.Request.URL.Path,
+						zap.Any("error", err),
+						zap.String("request", string(httpRequest)),
+					)
+					// If the connection is dead, we can't write a status to it.
+					c.Error(err.(error)) // nolint: errcheck
+					c.Abort()
+					return
+				}
+
+				if stack {
+					logger.Error("[Recovery from panic]",
+						zap.Any("error", err),
+						zap.String("request", string(httpRequest)),
+						zap.String("stack", string(debug.Stack())),
+					)
+				} else {
+					logger.Error("[Recovery from panic]",
+						zap.Any("error", err),
+						zap.String("request", string(httpRequest)),
+					)
+				}
+				c.AbortWithStatus(http.StatusInternalServerError)
+			}
+		}()
+		c.Next()
 	}
 }
 

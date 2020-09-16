@@ -17,6 +17,7 @@ var (
 )
 
 func Init() *gin.Engine {
+	log.InitLogger()
 	initService()
 	// 启动mq消费者
 	go initMqConsumer()
@@ -26,9 +27,8 @@ func Init() *gin.Engine {
 func initRouter() *gin.Engine {
 	r := gin.New()
 	r.Use(
-		gin.Logger(),       // Logger:控制台输出（线上环境可取消）
-		gin.Recovery(),     // panic异常500处理
-		log.LoggerToFile(), // logrus日志
+		log.Logger(log.AccessLogger),         // log日志
+		log.Recovery(log.AccessLogger, true), // panic异常500处理
 	)
 	gin.SetMode(setting.Config().RunMode)
 
