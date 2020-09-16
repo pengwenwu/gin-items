@@ -1,12 +1,10 @@
 package service
 
 import (
-	"fmt"
 	"gin-items/helper"
 	"gin-items/library/constant"
 	"gin-items/library/ecode"
 	"gin-items/library/rabbitmq"
-	"gin-items/library/setting"
 	"gin-items/library/token"
 	"gin-items/model"
 	"github.com/astaxie/beego/validation"
@@ -38,7 +36,6 @@ func (serv *Service) GetItemList(param *model.ParamItemSearch, tokenData *token.
 }
 
 func (serv *Service) GetItemBaseByItemId(itemId int, tokenData *token.MyCustomClaims) (item *model.Items, err error) {
-	fmt.Println(setting.AppConfig.RabbitMq.Port)
 	valid := validation.Validation{}
 	valid.Min(itemId, 1, "item_id")
 	if valid.HasErrors() {

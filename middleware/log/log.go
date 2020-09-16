@@ -10,7 +10,7 @@ import (
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
-	"github.com/natefinch/lumberjack"
+	//"github.com/natefinch/lumberjack"
 	"go.uber.org/zap"
 
 	"gin-items/library/setting"
@@ -19,21 +19,21 @@ import (
 var Logger *zap.Logger
 
 func InitLogger()  {
-	cfg := setting.Config()
-	lumberJackLogger := &lumberjack.Logger{
-		Filename:   "", // 日志文件路径
-		MaxSize:    0, // 每个日志文件保存的最大尺寸 单位：M
-		MaxAge:     0, // 日志文件最多保存多少个备份
-		MaxBackups: 0, // 文件最多保存多少天
-		LocalTime:  false,
-		Compress:   false, // 是否压缩
-	}
+	//cfg := setting.Config()
+	//lumberJackLogger := &lumberjack.Logger{
+	//	Filename:   "", // 日志文件路径
+	//	MaxSize:    0, // 每个日志文件保存的最大尺寸 单位：M
+	//	MaxAge:     0, // 日志文件最多保存多少个备份
+	//	MaxBackups: 0, // 文件最多保存多少天
+	//	LocalTime:  false,
+	//	Compress:   false, // 是否压缩
+	//}
 }
 
 // 日志记录到文件
 func LoggerToFile() gin.HandlerFunc {
-	logFilePath := setting.Config().Log.LogFilePath
-	logFileName := setting.Config().Log.LogFileName
+	logFilePath := setting.Config().Log.AccessLog.FilePath
+	logFileName := setting.Config().Log.AccessLog.FileName
 	//日志文件
 	fileName := path.Join(logFilePath, logFileName)
 	//写入文件

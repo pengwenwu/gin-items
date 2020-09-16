@@ -11,14 +11,14 @@ import (
 )
 
 type appConfig struct {
-	RunMode  string `mapstructure:"run_mode"`
-	Server   serverInfo
-	DB       multiDB `mapstructure:"database"`
-	RabbitMq RabbitMq
-	Log      logInfo  `mapstructure:"log"`
+	RunMode  string   `mapstructure:"run_mode"`
+	Server   server   `mapstructure:"server"`
+	DB       multiDB  `mapstructure:"database"`
+	RabbitMq rabbitMq `mapstructure:"rabbitmq"`
+	Log      multiLog `mapstructure:"log"`
 }
 
-type serverInfo struct {
+type server struct {
 	HttpPort     int `mapstructure:"http_port"`
 	ReadTimeout  int `mapstructure:"read_timeout"`
 	WriteTimeout int `mapstructure:"write_timeout"`
@@ -39,18 +39,18 @@ type multiSlaveDB struct {
 }
 
 type Database struct {
-	Type               string
-	User               string
-	PassWord           string
-	Host               string
-	Name               string
-	TablePrefix        string
-	NeedConnectionPool bool
-	MaxIdleConnections int
-	MaxOpenConnections int
+	Type               string `mapstructure:"type"`
+	User               string `mapstructure:"user"`
+	PassWord           string `mapstructure:"password"`
+	Host               string `mapstructure:"host"`
+	Name               string `mapstructure:"name"`
+	TablePrefix        string `mapstructure:"table_prefix"`
+	NeedConnectionPool bool   `mapstructure:"need_connection_pool"`
+	MaxIdleConnections int    `mapstructure:"max_idle_connections"`
+	MaxOpenConnections int    `mapstructure:"max_open_connections"`
 }
 
-type RabbitMq struct {
+type rabbitMq struct {
 	Host     string `mapstructure:"host"`
 	Port     int    `mapstructure:"port"`
 	User     string `mapstructure:"user"`
@@ -59,12 +59,21 @@ type RabbitMq struct {
 }
 
 type multiLog struct {
-	
+	AccessLog accessLog `mapstructure:"access_log"`
+	ErrorLog  errorLog  `mapstructure:"error_log"`
 }
 
-type logInfo struct {
-	LogFilePath string `mapstructure:"log_file_path"`
-	LogFileName string `mapstructure:"log_file_name"`
+type accessLog struct {
+	LogConfig `mapstructure:"log_config"`
+}
+
+type errorLog struct {
+	LogConfig `mapstructure:"log_config"`
+}
+
+type LogConfig struct {
+	FilePath string `mapstructure:"file_path"`
+	FileName string `mapstructure:"file_name"`
 }
 
 var (
