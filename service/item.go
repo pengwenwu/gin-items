@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"github.com/astaxie/beego/validation"
 	"go.uber.org/zap"
 
@@ -385,6 +386,7 @@ func (serv *Service) SyncItemUpdate(recvData *rabbitmq.SyncItemUpdateData) error
 		"item_id": itemId,
 	}
 	itemBase, err := serv.dao.GetItem(where)
+	return errors.New("s")
 	if err != nil {
 		return err
 	}

@@ -120,7 +120,7 @@ func initMqConsumer() {
 			_ = rabbitmq.MqUnpack(receivedData, data)
 			err := serv.SyncItemInsert(data)
 			if err != nil {
-				log.ErrorLogger.Sugar().Errorf("syncItemInsert error: %s, receiveData: %+v", err.Error(), receivedData)
+				log.ErrorLogger.Sugar().Errorf("syncItemInsert error: %s, receiveData: %+v", err.Error(), data)
 			}
 		})
 	}()
@@ -133,6 +133,7 @@ func initMqConsumer() {
 		consumer.Received(rabbitmq.SyncItemUpdate, func(receivedData []byte) {
 			data := &rabbitmq.SyncItemUpdateData{}
 			_ = rabbitmq.MqUnpack(receivedData, data)
+			err := serv.SyncItemUpdate(data)
 			if err != nil {
 				log.ErrorLogger.Sugar().Errorf("syncItemUpdate error: %s, receiveData: %+v", err.Error(), receivedData)
 			}
