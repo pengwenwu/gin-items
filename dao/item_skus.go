@@ -14,8 +14,7 @@ func (dao *Dao) GetSku(where map[string]interface{}) (sku *model.ItemSkus, err e
 	sku = &model.ItemSkus{}
 	err = dao.MasterServiceItems.
 		Where(where).
-		Limit(1).
-		Find(&sku).Error
+		Take(&sku).Error
 	return
 }
 

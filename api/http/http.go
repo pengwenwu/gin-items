@@ -2,7 +2,6 @@ package http
 
 import (
 	"fmt"
-
 	"github.com/gin-gonic/gin"
 
 	"gin-items/library/rabbitmq"
@@ -89,7 +88,10 @@ func initMqConsumer() {
 		consumer.Received(rabbitmq.SyncSkuInsert, func(receivedData []byte) {
 			data := &rabbitmq.SyncSkuInsertData{}
 			_ = rabbitmq.MqUnpack(receivedData, data)
-			serv.SyncSkuInsert(data)
+			err := serv.SyncSkuInsert(data)
+			if err != nil {
+				log.ErrorLogger.Sugar().Errorf("syncSkuInsert error: %s, receiveData: %+v", err.Error(), receivedData)
+			}
 		})
 	}()
 
@@ -101,7 +103,10 @@ func initMqConsumer() {
 		consumer.Received(rabbitmq.SyncSkuUpdate, func(receivedData []byte) {
 			data := &rabbitmq.SyncSkuUpdateData{}
 			_ = rabbitmq.MqUnpack(receivedData, data)
-			serv.SyncSkuUpdate(data)
+			err := serv.SyncSkuUpdate(data)
+			if err != nil {
+				log.ErrorLogger.Sugar().Errorf("syncSkuUpdate error: %s, receiveData: %+v", err.Error(), receivedData)
+			}
 		})
 	}()
 
@@ -113,7 +118,10 @@ func initMqConsumer() {
 		consumer.Received(rabbitmq.SyncItemInsert, func(receivedData []byte) {
 			data := &rabbitmq.SyncItemInsertData{}
 			_ = rabbitmq.MqUnpack(receivedData, data)
-			serv.SyncItemInsert(data)
+			err := serv.SyncItemInsert(data)
+			if err != nil {
+				log.ErrorLogger.Sugar().Errorf("syncItemInsert error: %s, receiveData: %+v", err.Error(), receivedData)
+			}
 		})
 	}()
 
@@ -125,7 +133,9 @@ func initMqConsumer() {
 		consumer.Received(rabbitmq.SyncItemUpdate, func(receivedData []byte) {
 			data := &rabbitmq.SyncItemUpdateData{}
 			_ = rabbitmq.MqUnpack(receivedData, data)
-			serv.SyncItemUpdate(data)
+			if err != nil {
+				log.ErrorLogger.Sugar().Errorf("syncItemUpdate error: %s, receiveData: %+v", err.Error(), receivedData)
+			}
 		})
 	}()
 }

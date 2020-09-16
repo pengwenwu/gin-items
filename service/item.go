@@ -1,13 +1,16 @@
 package service
 
 import (
+	"github.com/astaxie/beego/validation"
+	"go.uber.org/zap"
+
 	"gin-items/helper"
 	"gin-items/library/constant"
 	"gin-items/library/ecode"
 	"gin-items/library/rabbitmq"
 	"gin-items/library/token"
+	"gin-items/middleware/log"
 	"gin-items/model"
-	"github.com/astaxie/beego/validation"
 )
 
 func (serv *Service) GetItemList(param *model.ParamItemSearch, tokenData *token.MyCustomClaims) (itemList []*model.Item, total int64, err error) {
@@ -123,6 +126,7 @@ func (serv *Service) Add(item *model.Item) (itemId int, err error) {
 	}
 	itemId, err = serv.dao.InsertItem(baseItems)
 	if err != nil {
+		log.ErrorLogger.Error("add item error", zap.String("err", err.Error()))
 		err = ecode.InsertItemErr
 		return
 	}
@@ -153,8 +157,9 @@ func (serv *Service) addSkus(itemId int, skus []*model.ItemSkus) {
 	for _, sku := range skus {
 		sku.ItemId = itemId
 	}
-	_ = serv.dao.InsertSkus(skus)
-	// todo: 报警校验失败
+	if err := serv.dao.InsertSkus(skus); err != nil {
+		log.ErrorLogger.Error("add sku error", zap.Int("item_id", itemId), zap.String("error", err.Error()))
+	}
 }
 
 // 添加规格属性
@@ -171,10 +176,12 @@ func (serv *Service) addProps(itemId int, props []*model.ItemProps) {
 			propValues = append(propValues, propValue)
 		}
 	}
-	// todo: 报警校验
-	_ = serv.dao.InsertProps(props)
-	// todo：报警校验
-	_ = serv.dao.InsertPropValues(propValues)
+	if err := serv.dao.InsertProps(props); err != nil {
+		log.ErrorLogger.Error("insert props error", zap.Int("item_id", itemId))
+	}
+	if err := serv.dao.InsertPropValues(propValues); err != nil {
+		log.ErrorLogger.Error("insert prop_values error", zap.Int("item_id", itemId))
+	}
 }
 
 func (serv *Service) addPhotos(itemId int, photos []*model.ItemPhotos) {
@@ -182,8 +189,9 @@ func (serv *Service) addPhotos(itemId int, photos []*model.ItemPhotos) {
 		photo.ItemId = itemId
 		photo.State = constant.ItemPhotosStateNormal
 	}
-	// todo: 报警校验
-	_ = serv.dao.InsertPhotos(photos)
+	if err := serv.dao.InsertPhotos(photos); err != nil {
+		log.ErrorLogger.Error("add photos error", zap.Int("item_id", itemId))
+	}
 }
 
 func (serv *Service) addParameters(itemId int, parameters []*model.ItemParameters) {
@@ -191,23 +199,22 @@ func (serv *Service) addParameters(itemId int, parameters []*model.ItemParameter
 		parameter.ItemId = itemId
 		parameter.State = constant.ItemParametersStateNormal
 	}
-	// todo: 报警校验
-	_ = serv.dao.InsertParameters(parameters)
+	if  err := serv.dao.InsertParameters(parameters); err != nil{
+		log.ErrorLogger.Error("add parameters error", zap.Int("item_id", itemId))
+	}
 }
 
-func (serv *Service) SyncSkuInsert(recvData *rabbitmq.SyncSkuInsertData) {
+func (serv *Service) SyncSkuInsert(recvData *rabbitmq.SyncSkuInsertData) error {
 	itemId := recvData.ItemId
 	skuId := recvData.SkuId
 	itemSearch := &model.ItemSearches{}
 	itemBase, err := serv.dao.GetItem(map[string]interface{}{"item_id": itemId})
 	if err != nil {
-		// todo: log记录
-		return
+		return err
 	}
 	skuData, err := serv.dao.GetSku(map[string]interface{}{"sku_id": skuId})
 	if err != nil {
-		// todo: log记录
-		return
+		return err
 	}
 
 	itemSearch.ItemId = itemBase.ItemId
@@ -221,8 +228,10 @@ func (serv *Service) SyncSkuInsert(recvData *rabbitmq.SyncSkuInsertData) {
 	itemSearch.SkuState = skuData.State
 
 	err = serv.dao.InsertSearch(itemSearch)
-	// todo 错误处理
-	return
+	if err != nil {
+		log.ErrorLogger.Error("insert search error", zap.Int("sku_id", skuId))
+	}
+	return err
 }
 
 func (serv *Service) GetItemByItemIds(itemIds []int, tokenData *token.MyCustomClaims) ([]*model.Item, error) {
@@ -301,18 +310,16 @@ func (serv *Service) UpdateItem(item *model.Item, tokenData *token.MyCustomClaim
 	return nil
 }
 
-func (serv *Service) SyncSkuUpdate(recvData *rabbitmq.SyncSkuUpdateData) {
+func (serv *Service) SyncSkuUpdate(recvData *rabbitmq.SyncSkuUpdateData) error {
 	itemId := recvData.ItemId
 	skuId := recvData.SkuId
 	itemBase, err := serv.dao.GetItem(map[string]interface{}{"item_id": itemId})
 	if err != nil {
-		// todo: log记录
-		return
+		return err
 	}
 	skuData, err := serv.dao.GetSku(map[string]interface{}{"sku_id": skuId})
 	if err != nil {
-		// todo: log记录
-		return
+		return err
 	}
 
 	where := map[string]interface{}{
@@ -329,9 +336,8 @@ func (serv *Service) SyncSkuUpdate(recvData *rabbitmq.SyncSkuUpdateData) {
 		ItemState: itemBase.State,
 		SkuState:  skuData.State,
 	}
-	_ = serv.dao.PutUpdateSearch(itemSearch, where)
-	// todo 错误处理
-	return
+	err = serv.dao.PutUpdateSearch(itemSearch, where)
+	return err
 }
 
 func (serv *Service) DeleteItem(itemId int, isFinalDelete bool, tokenData *token.MyCustomClaims) error {
@@ -373,21 +379,19 @@ func (serv *Service) DeleteItem(itemId int, isFinalDelete bool, tokenData *token
 	return nil
 }
 
-func (serv *Service) SyncItemUpdate(recvData *rabbitmq.SyncItemUpdateData) {
+func (serv *Service) SyncItemUpdate(recvData *rabbitmq.SyncItemUpdateData) error {
 	itemId := recvData.ItemId
 	where := map[string]interface{}{
 		"item_id": itemId,
 	}
 	itemBase, err := serv.dao.GetItem(where)
 	if err != nil {
-		// todo: log记录
-		return
+		return err
 	}
 	where["state"] = itemBase.State
 	skuList, err := serv.dao.GetSkuList(where)
 	if err != nil {
-		// todo: log记录
-		return
+		return err
 	}
 
 	for _, sku := range skuList {
@@ -402,13 +406,15 @@ func (serv *Service) SyncItemUpdate(recvData *rabbitmq.SyncItemUpdateData) {
 			ItemState: itemBase.State,
 			SkuState:  sku.State,
 		}
-		_ = serv.dao.PutUpdateSearch(itemSearch, where)
-		// todo 错误处理
+		err = serv.dao.PutUpdateSearch(itemSearch, where)
+		if err != nil {
+			log.ErrorLogger.Error("put update search error", zap.Int("sku_id", sku.SkuId), zap.String("error", err.Error()))
+		}
 	}
-	return
+	return err
 }
 
-func (serv *Service) SyncItemInsert(recvData *rabbitmq.SyncItemInsertData) {
+func (serv *Service) SyncItemInsert(recvData *rabbitmq.SyncItemInsertData) error {
 	itemId := recvData.ItemId
 
 	where := map[string]interface{}{
@@ -416,14 +422,12 @@ func (serv *Service) SyncItemInsert(recvData *rabbitmq.SyncItemInsertData) {
 	}
 	itemBase, err := serv.dao.GetItem(where)
 	if err != nil {
-		// todo: log记录
-		return
+		return err
 	}
 	where["state"] = itemBase.State
 	skuList, err := serv.dao.GetSkuList(where)
 	if err != nil {
-		// todo: log记录
-		return
+		return err
 	}
 
 	var searchList []*model.ItemSearches
@@ -443,8 +447,7 @@ func (serv *Service) SyncItemInsert(recvData *rabbitmq.SyncItemInsertData) {
 	}
 
 	err = serv.dao.InsertSearches(searchList)
-	// todo 错误处理
-	return
+	return err
 }
 
 func (serv *Service) RecoverItem(itemId int, tokenData *token.MyCustomClaims) error {
@@ -460,9 +463,18 @@ func (serv *Service) RecoverItem(itemId int, tokenData *token.MyCustomClaims) er
 		"appkey":  tokenData.AppKey,
 		"channel": tokenData.Channel,
 	}
-	// todo 错误校验
-	_ = serv.dao.UpdateItemState(where, constant.ItemStateNormal)
-	_ = serv.dao.RecoverSku(where)
+	err := serv.dao.UpdateItemState(where, constant.ItemStateNormal)
+	if err != nil {
+		log.ErrorLogger.Error("update item state error", zap.Int("item_id", itemId), zap.String("error", err.Error()))
+		err = ecode.UpdateItemErr
+		return err
+	}
+	err = serv.dao.RecoverSku(where)
+	if err != nil {
+		log.ErrorLogger.Error("recover item error", zap.Int("item_id", itemId), zap.String("error", err.Error()))
+		err = ecode.UpdateItemErr
+		return err
+	}
 
 	// 发布商品更新消息
 	go func() {

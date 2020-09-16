@@ -3,10 +3,13 @@ package rabbitmq
 import (
 	"encoding/json"
 	"fmt"
-	"gin-items/library/setting"
 	"time"
 
 	"github.com/streadway/amqp"
+	"go.uber.org/zap"
+
+	"gin-items/library/setting"
+	"gin-items/middleware/log"
 )
 
 // Exchange type
@@ -34,10 +37,9 @@ var (
 	retryTimes                             = 5
 )
 
-// @todo 定义一个错误处理函数
 func dealError(err error) error {
 	if err != nil {
-		//variable.ZapLog.Error(err.Error())
+		log.ErrorLogger.Error("rabbitmq error", zap.String("error", err.Error()))
 	}
 	return err
 }

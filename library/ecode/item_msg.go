@@ -9,4 +9,5 @@ var ItemMsgMaps = map[Code]string{
 	InsertParameterErr: "新增parameter失败",
 	InsertSearchErr:    "新增search失败",
 	UpdateItemErr:      "更新item失败",
+	RecoverItemErr:     "恢复item失败",
 }
