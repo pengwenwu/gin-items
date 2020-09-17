@@ -1,7 +1,6 @@
 package service
 
 import (
-	"errors"
 	"github.com/astaxie/beego/validation"
 	"go.uber.org/zap"
 
