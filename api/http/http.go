@@ -90,7 +90,7 @@ func initMqConsumer() {
 			_ = rabbitmq.MqUnpack(receivedData, data)
 			err := serv.SyncSkuInsert(data)
 			if err != nil {
-				log.ErrorLogger.Sugar().Errorf("syncSkuInsert error: %s, receiveData: %+v", err.Error(), receivedData)
+				log.ErrorLogger.Sugar().Errorf("syncSkuInsert error: %s, receiveData: %+v", err.Error(), data)
 			}
 		})
 	}()
@@ -105,7 +105,7 @@ func initMqConsumer() {
 			_ = rabbitmq.MqUnpack(receivedData, data)
 			err := serv.SyncSkuUpdate(data)
 			if err != nil {
-				log.ErrorLogger.Sugar().Errorf("syncSkuUpdate error: %s, receiveData: %+v", err.Error(), receivedData)
+				log.ErrorLogger.Sugar().Errorf("syncSkuUpdate error: %s, receiveData: %+v", err.Error(), data)
 			}
 		})
 	}()
@@ -135,7 +135,7 @@ func initMqConsumer() {
 			_ = rabbitmq.MqUnpack(receivedData, data)
 			err := serv.SyncItemUpdate(data)
 			if err != nil {
-				log.ErrorLogger.Sugar().Errorf("syncItemUpdate error: %s, receiveData: %+v", err.Error(), receivedData)
+				log.ErrorLogger.Sugar().Errorf("syncItemUpdate error: %s, receiveData: %+v", err.Error(), data)
 			}
 		})
 	}()
