@@ -44,8 +44,8 @@ run_mode = "debug"
 
 [log]
     [log.access_log.log_config]
-        file_path = "/Users/pengwenwu/my_go/src/gin-items/logs/access_log"
+        file_path = "./logs/access_log"
         file_name = "access.log"
     [log.error_log.log_config]
-        file_path = "/Users/pengwenwu/my_go/src/gin-items/logs/error_log"
+        file_path = "./logs/error_log"
         file_name = "error.log"

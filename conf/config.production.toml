@@ -18,7 +18,7 @@ run_mode = "release"
             name = "service_items"
             table_prefix = ""
             need_connection_pool = true
-            max_idle_connections = 10
+            Max_idle_connections = 10
             max_open_connections = 100
     [database.slave]
         [database.slave.service_items]
@@ -35,6 +35,17 @@ run_mode = "release"
             max_idle_connections = 0
             max_open_connections = 0
 
+[rabbitmq]
+    host = "localhost"
+    port = 5672
+    user = "guest"
+    password = "guest"
+    vhost = "/"
+
 [log]
-    log_file_path = "/Users/pengwenwu/my_go/src/gin-items/logs"
-    log_file_name = "access.log"
+    [log.access_log.log_config]
+        file_path = "./logs/access_log"
+        file_name = "access.log"
+    [log.error_log.log_config]
+        file_path = "./logs/error_log"
+        file_name = "error.log"
