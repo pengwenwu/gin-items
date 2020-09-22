@@ -1,14 +1,12 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
-	"net/http"
-	"os"
-	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/fvbock/endless"
 
 	apiHTTP "gin-items/api/http"
 	"gin-items/library/setting"
@@ -17,31 +15,18 @@ import (
 func main() {
 	router := apiHTTP.Init()
 
-	s := &http.Server{
-		Addr:           fmt.Sprintf(":%d", setting.Config().Server.HttpPort),
-		Handler:        router,
-		ReadTimeout:    time.Duration(setting.Config().Server.ReadTimeout) * time.Second,
-		WriteTimeout:   time.Duration(setting.Config().Server.WriteTimeout) * time.Second,
-		MaxHeaderBytes: 1 << 20,
+	endless.DefaultReadTimeOut = time.Duration(setting.Config().Server.ReadTimeout) * time.Second
+	endless.DefaultWriteTimeOut = time.Duration(setting.Config().Server.WriteTimeout) * time.Second
+	endless.DefaultMaxHeaderBytes = 1 << 20
+	endPoint := fmt.Sprintf(":%d", setting.Config().Server.HttpPort)
+
+	server := endless.NewServer(endPoint, router)
+	server.BeforeBegin = func(add string) {
+		log.Printf("Actual pid is %d", syscall.Getpid())
 	}
 
-	go func() {
-		// 服务连接
-		if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %s\n", err)
-		}
-	}()
-
-	// 等待中断信号以优雅地关闭服务器（设置 5 秒的超时时间）
-	quit := make(chan os.Signal)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGUSR2)
-	<-quit
-	log.Println("Shutdown Server ...")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
-	defer cancel()
-	if err := s.Shutdown(ctx); err != nil {
-		log.Fatal("Server Shutdown:", err)
+	err := server.ListenAndServe()
+	if err != nil {
+		log.Printf("Server err: %v", err)
 	}
-	log.Println("Server exiting")
 }

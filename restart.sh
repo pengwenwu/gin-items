@@ -14,7 +14,7 @@ if [ 0 == $COUNT ]; then
   echo "${PROCESS_NAME} started"
 else
   echo "${PROCESS_NAME} restarting..."
-  kill -USR2 $(ps -ef | grep "${PROCESS_NAME}" | grep -v "grep" | awk '{print $2}')
+  kill -1 $(ps -ef | grep "${PROCESS_NAME}" | grep -v "grep" | awk '{print $2}')
   echo "${PROCESS_NAME} restarted"
 fi
 
