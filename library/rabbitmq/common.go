@@ -27,11 +27,12 @@ var (
 )
 
 var (
-	url = fmt.Sprintf("amqp://%s:%s@%s:%d/",
+	url = fmt.Sprintf("amqp://%s:%s@%s:%d/%s",
 		setting.Config().RabbitMq.User,
 		setting.Config().RabbitMq.Password,
 		setting.Config().RabbitMq.Host,
-		setting.Config().RabbitMq.Port)
+		setting.Config().RabbitMq.Port,
+		setting.Config().RabbitMq.Vhost)
 	exchangeName                           = "service"
 	offLineReconnectInterval time.Duration = 10
 	retryTimes                             = 5
