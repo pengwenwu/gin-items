@@ -10,7 +10,7 @@ echo ""
 
 if [ 0 == $COUNT ]; then
   echo "${PROCESS_NAME} starting..."
-  nohup "${SHELL_FOLDER}/cmd/${PROCESS_NAME}" &
+  nohup "${SHELL_FOLDER}/${PROCESS_NAME}" &
   echo "${PROCESS_NAME} started"
 else
   echo "${PROCESS_NAME} restarting..."

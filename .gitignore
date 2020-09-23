@@ -1,6 +1,7 @@
 .idea/
 .DS_Store
 
+service_item_go
 vendor
 logs
 nohup.out
