@@ -1,8 +1,10 @@
 package service
 
 import (
-	"github.com/astaxie/beego/validation"
-	"go.uber.org/zap"
+    "fmt"
+    "github.com/astaxie/beego/validation"
+    "github.com/mitchellh/mapstructure"
+    "go.uber.org/zap"
 
 	"gin-items/helper"
 	"gin-items/library/constant"
@@ -38,18 +40,25 @@ func (serv *Service) GetItemList(param *model.ParamItemSearch, tokenData *token.
 	return
 }
 
-func (serv *Service) GetItemBaseByItemId(itemId int, tokenData *token.MyCustomClaims) (item *model.Items, err error) {
+func (serv *Service) GetItemBaseByItemId(itemId int, tokenData *token.MyCustomClaims) (item map[string]interface{}, err error) {
 	valid := validation.Validation{}
 	valid.Min(itemId, 1, "item_id")
 	if valid.HasErrors() {
 		err = helper.GetEcodeValidParam(valid.Errors)
 		return
 	}
-	item, err = serv.dao.GetItem(map[string]interface{}{
+	item, err = serv.dao.GetBaseItem(map[string]interface{}{
 		"item_id": itemId,
 		"appkey":  tokenData.AppKey,
 		"channel": tokenData.Channel,
 	})
+
+	structItem := &model.Items{}
+	if err := mapstructure.Decode(item, &structItem); err != nil {
+	    fmt.Println(err)
+    }
+	fmt.Printf("%+v", structItem)
+
 	return
 }
 
