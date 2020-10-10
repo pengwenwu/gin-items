@@ -3,8 +3,9 @@ package dao
 import (
 	"database/sql"
 	"fmt"
+    "gin-items/model"
 
-	"gorm.io/driver/mysql"
+    "gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
 	"gin-items/library/setting"
@@ -28,6 +29,7 @@ func (dao *Dao) init() {
 
 	dao.MasterServiceItems = openDB(setting.Config().DB.Master.ServiceItems)
 	dao.SlaveServiceItems = openDB(setting.Config().DB.Slave.ServiceItems)
+	_ = dao.MasterServiceItems.Callback().Create().Replace("gorm:before_create", model.BeforeCreate)
 }
 
 func openDB(conf *setting.Database) *gorm.DB {

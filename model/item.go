@@ -1,14 +1,15 @@
 package model
 
 import (
-	"reflect"
-	"strings"
+    "fmt"
+    "reflect"
+    "strings"
 
-	"github.com/astaxie/beego/validation"
-	"gorm.io/gorm"
+    "github.com/astaxie/beego/validation"
+    "gorm.io/gorm"
 
-	"gin-items/helper"
-	"gin-items/library/constant"
+    "gin-items/helper"
+    "gin-items/library/constant"
 )
 
 type Items struct {
@@ -118,6 +119,27 @@ func GetFields(i interface{}) (fields []string) {
 		fields = append(fields, sf.Tag.Get("json"))
 	}
 	return
+}
+
+func BeforeCreate(db *gorm.DB) {
+    fmt.Println(db.Statement.ReflectValue.Kind())
+    if db.Statement.Schema != nil {
+        switch db.Statement.ReflectValue.Kind() {
+        case reflect.Slice, reflect.Array:
+            for i := 0; i < db.Statement.ReflectValue.Len(); i++ {
+                fmt.Println(111, db.Statement.ReflectValue.Index(i), db.Statement.ReflectValue.Index(i).Len())
+                t := db.Statement.ReflectValue.Index(i).FieldByName("dated")
+                fmt.Println(222, t.IsNil())
+            }
+        case reflect.Struct:
+            if field := db.Statement.Schema.LookUpField("dated"); field != nil {
+                _ = field.Set(db.Statement.ReflectValue, helper.FormatDateTimeNow())
+            }
+            if field := db.Statement.Schema.LookUpField("last_dated"); field != nil {
+                _ = field.Set(db.Statement.ReflectValue, helper.FormatDateTimeZero())
+            }
+        }
+    }
 }
 
 func (items *Items) BeforeCreate(tx *gorm.DB) error {
